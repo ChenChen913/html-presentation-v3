@@ -1,0 +1,345 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>自揭老底：我到底用 AI 做了哪些事儿</title>
+    <style>
+        /* 全局样式 - 极简学术风 */
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: #0b132b; /* 深学术蓝 */
+            color: #f8f9fa; /* 珍珠白 */
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            overflow: hidden;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+
+        /* 标题衬线字体，彰显严谨庄重 */
+        h1, h2, h3 {
+            font-family: "Georgia", "Times New Roman", serif;
+            color: #d4af37; /* 暗金色 */
+            font-weight: normal;
+            letter-spacing: 2px;
+        }
+
+        /* 幻灯片容器 */
+        .slide {
+            display: none;
+            width: 80%;
+            max-width: 1000px;
+            height: 70vh;
+            flex-direction: column;
+            justify-content: center;
+            animation: fadeIn 0.8s ease-in-out;
+        }
+
+        .slide.active {
+            display: flex;
+        }
+
+        /* 封面页特殊样式 */
+        .cover {
+            text-align: center;
+        }
+        .cover h1 {
+            font-size: 3.5rem;
+            margin-bottom: 10px;
+            border-bottom: 1px solid rgba(212, 175, 55, 0.3);
+            padding-bottom: 20px;
+        }
+        .cover p {
+            font-size: 1.5rem;
+            color: #a0aabf;
+            margin-top: 20px;
+            letter-spacing: 1px;
+        }
+        .cover .author {
+            margin-top: 60px;
+            font-size: 1.2rem;
+            font-family: "Georgia", serif;
+            color: #d4af37;
+        }
+
+        /* 内容页样式 */
+        .content h2 {
+            font-size: 2.5rem;
+            border-bottom: 1px solid rgba(212, 175, 55, 0.3);
+            padding-bottom: 15px;
+            margin-bottom: 40px;
+            text-align: left;
+        }
+
+        ul {
+            list-style-type: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        li {
+            font-size: 1.6rem;
+            line-height: 2.2;
+            margin-bottom: 20px;
+            position: relative;
+            padding-left: 30px;
+            color: #e2e8f0;
+        }
+
+        li::before {
+            content: "▪";
+            color: #d4af37;
+            position: absolute;
+            left: 0;
+            top: 0;
+            font-size: 1.8rem;
+        }
+
+        .sub-list {
+            margin-top: 6px;
+            margin-bottom: 6px;
+        }
+
+        .sub-list li {
+            font-size: 1.3rem;
+            line-height: 1.7;
+            margin-bottom: 6px;
+            color: #a0aabf;
+        }
+        .sub-list li::before {
+            content: "◦";
+            font-size: 1.2rem;
+        }
+
+        /* 强调文字 */
+        strong {
+            color: #d4af37;
+            font-weight: 500;
+        }
+
+        /* 控制台与页码 */
+        .controls {
+            position: fixed;
+            bottom: 30px;
+            width: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 30px;
+            z-index: 100;
+        }
+
+        button {
+            background: transparent;
+            border: 1px solid rgba(212, 175, 55, 0.5);
+            color: #d4af37;
+            padding: 10px 25px;
+            font-size: 1rem;
+            font-family: "Georgia", serif;
+            cursor: pointer;
+            transition: all 0.3s;
+            border-radius: 2px;
+        }
+
+        button:hover {
+            background: rgba(212, 175, 55, 0.1);
+            border-color: #d4af37;
+        }
+
+        #page-num {
+            font-family: "Georgia", serif;
+            color: #5c677d;
+            font-size: 1.2rem;
+            letter-spacing: 1px;
+        }
+
+        /* 渐显动画 */
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Slide 1: 封面 -->
+    <div class="slide active cover" id="slide-1">
+        <h1>自揭老底：我用 AI 做了哪些事儿</h1>
+        <p>从 Prompt 到个人记忆系统的范式演进</p>
+        <div class="author">汇报人：maomaotech25</div>
+    </div>
+
+    <!-- Slide 2: 缘起与发问 -->
+    <div class="slide content" id="slide-2">
+        <h2>01. 汇报缘起与核心拷问</h2>
+        <ul>
+            <li><strong>外部触发：</strong> 行业对 AI 使用深度的核心考核指标。</li>
+            <li><strong>两个维度的自我审视：</strong>
+                <ul class="sub-list">
+                    <li>我究竟产出了哪些具有实际价值的工程？</li>
+                    <li>Token 的消耗量背后的逻辑与效率是什么？</li>
+                </ul>
+            </li>
+            <li><strong>研究基点：</strong> 从单纯的工具使用者，向系统构建者的思维转变。</li>
+        </ul>
+    </div>
+
+    <!-- Slide 3: 启蒙与探索 -->
+    <div class="slide content" id="slide-3">
+        <h2>02. 启蒙期：从单点爆发到 Vibe Coding</h2>
+        <ul>
+            <li><strong>初期接入：</strong> 聚焦于 Prompt 工程与 AI 图像生成。</li>
+            <li><strong>代码跃迁：</strong> 累计生成 140+ HTML 原型网页。
+                <ul class="sub-list">
+                    <li>桌面时钟原型</li>
+                    <li>医院住院系统（经十余次高频迭代打磨）</li>
+                    <li>血压记录工具与数据信息卡片</li>
+                </ul>
+            </li>
+            <li><strong>方法论提炼：</strong> 深度交流与微调，完成从单网页到“小项目”的过渡。</li>
+        </ul>
+    </div>
+
+    <!-- Slide 4: 实践与痛点 -->
+    <div class="slide content" id="slide-4">
+        <h2>03. 独立开发：电子药箱与现实壁垒</h2>
+        <ul>
+            <li><strong>落地项目：</strong> 家庭电子医药管理系统。
+                <ul class="sub-list">
+                    <li>实现说明书记录、分类及过期自动预警。</li>
+                    <li>工具链：Kiro (Spec 模式初探) / ClaudeCode / Trae。</li>
+                </ul>
+            </li>
+            <li><strong>当前开发者的核心痛点：</strong>
+                <ul class="sub-list">
+                    <li><strong>算力与资金：</strong> 顶尖大模型额度消耗极快。</li>
+                    <li><strong>生态局限：</strong> Windows 系统难以完美支撑底层 AI CLI 生态（向往 Mac 环境）。</li>
+                </ul>
+            </li>
+        </ul>
+    </div>
+
+    <!-- Slide 5: 思维重塑 -->
+    <div class="slide content" id="slide-5">
+        <h2>04. Skill 的本质：思维的原子化与辅助记忆</h2>
+        <ul>
+            <li><strong>性能定律：</strong> Skill 必须依托顶尖模型驱动才能达到极限。</li>
+            <li><strong>工作流重构：</strong> 促使人类将模糊任务精细化拆解。
+                <ul class="sub-list">
+                    <li>例：信息获取 -> 数据向量化 -> 分析极值 -> 网页/文档多模态呈现。</li>
+                </ul>
+            </li>
+            <li><strong>认知深化：</strong> 
+                <ul class="sub-list">
+                    <li>独创：融合中医理论的健康管理 Skill、深度知识提取体系。</li>
+                    <li>容错：将 AI 踩坑与报错过程沉淀为专属 Skill，形成机器记忆。</li>
+                </ul>
+            </li>
+        </ul>
+    </div>
+
+    <!-- Slide 6: 技术哲学 -->
+    <div class="slide content" id="slide-6">
+        <h2>05. 架构哲学：稳定性原则与奥卡姆剃刀</h2>
+        <ul>
+            <li><strong>系统复杂度的演进：</strong> 网页 (轻度) → Skill (中度) → 项目 (重度)。</li>
+            <li><strong>杀鸡焉用宰牛刀原则：</strong>
+                <ul class="sub-list">
+                    <li>能用 Python 脚本解决的任务，绝不滥用 AI Agent。</li>
+                    <li>例：Markdown 中英文自动加空格，代码清洗远胜 Token 消耗。</li>
+                </ul>
+            </li>
+            <li><strong>技术中立观：</strong> 破除对大厂 Agent 或 OpenClaw（小龙虾）的盲目神化，只取其无监视、免排队之 API 优势。</li>
+        </ul>
+    </div>
+
+    <!-- Slide 7: 核心愿景 -->
+    <div class="slide content" id="slide-7">
+        <h2>06. 终极构想：AI 个人记忆系统 (数字化分身)</h2>
+        <ul>
+            <li>超越“前女友/前同事复刻”的整活属性，建立严肃的个人数字资产体系。</li>
+            <li><strong>三维时空架构模型：</strong>
+                <ul class="sub-list">
+                    <li><strong>过去：</strong> 建立庞大的历史回溯数据库。</li>
+                    <li><strong>现在：</strong> 矩阵化日志记录（日常规划 / 健康监测 / 学习复盘）。</li>
+                    <li><strong>未来：</strong> 引入 Mirofish 算法机制，基于历史数据对个人决策与发展进行沙盘推演。</li>
+                </ul>
+            </li>
+        </ul>
+    </div>
+
+    <!-- Slide 8: 前沿与展望 -->
+    <div class="slide content" id="slide-8">
+        <h2>07. 未来深水区：底层架构探索</h2>
+        <ul>
+            <li><strong>Agent 协作矩阵：</strong> ClaudeCode Agents Team 的并行与内部通信。</li>
+            <li><strong>Harness (驾驭与调度)：</strong> 借鉴古典政治制度（如“三省六部制”）的数字劳动力管理模型。</li>
+            <li><strong>全终端 CLI 接管：</strong>
+                <ul class="sub-list">
+                    <li>打造 ClaudeCode (大脑) 联合 Gemini/CodeX (双臂) 的多端协同。</li>
+                    <li>终极断言：<strong>未来的 CLI 不再是给人看的，而是给 AI 看的。</strong></li>
+                </ul>
+            </li>
+        </ul>
+    </div>
+
+    <!-- Slide 9: 结语 -->
+    <div class="slide cover" id="slide-9">
+        <h1>致谢</h1>
+        <p>“AI 时代不仅加速了万物的发展，<br>更重塑了人类对自我与世界运行逻辑的理解。”</p>
+        <div class="author">Q & A</div>
+    </div>
+
+    <!-- 交互控制台 -->
+    <div class="controls">
+        <button onclick="prevSlide()">&#8592; PREV</button>
+        <div id="page-num">1 / 9</div>
+        <button onclick="nextSlide()">NEXT &#8594;</button>
+    </div>
+
+    <script>
+        let currentSlide = 0;
+        const slides = document.querySelectorAll('.slide');
+        const pageNum = document.getElementById('page-num');
+
+        function updateSlide() {
+            slides.forEach((slide, index) => {
+                slide.classList.remove('active');
+                if (index === currentSlide) {
+                    slide.classList.add('active');
+                }
+            });
+            pageNum.innerText = `${currentSlide + 1} / ${slides.length}`;
+        }
+
+        function nextSlide() {
+            if (currentSlide < slides.length - 1) {
+                currentSlide++;
+                updateSlide();
+            }
+        }
+
+        function prevSlide() {
+            if (currentSlide > 0) {
+                currentSlide--;
+                updateSlide();
+            }
+        }
+
+        // 监听键盘左右方向键
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'ArrowRight') {
+                nextSlide();
+            } else if (e.key === 'ArrowLeft') {
+                prevSlide();
+            }
+        });
+
+        // 初始化
+        updateSlide();
+    </script>
+</body>
+</html>

@@ -1,0 +1,9 @@
+# 本地 QA 中间产物
+.workbuddy-ai/
+.qa-shots/
+node_modules/
+
+# 编辑器 / 系统
+.DS_Store
+Thumbs.db
+*.log
