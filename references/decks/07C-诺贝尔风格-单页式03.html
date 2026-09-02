@@ -1,0 +1,465 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>自揭老底：我到底用 AI 做了哪些事儿</title>
+    <style>
+        /* CSS 变量：诺贝尔学术经典配色 */
+        :root {
+            --bg-color: #fcfbf9;      /* 纯净学术白 */
+            --text-color: #1a1c20;    /* 黑灰/墨黑 */
+            --accent-color: #8c1515;  /* 斯坦福红/强调红 */
+            --border-color: #d1cbb8;  /* 分割线颜色 */
+            --mono-color: #4a5568;    /* 代码块颜色 */
+            
+            --font-serif: "Georgia", "Times New Roman", serif;
+            --font-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", sans-serif;
+            --font-mono: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: #111; /* 屏幕外围底色 */
+            font-family: var(--font-sans);
+            color: var(--text-color);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        /* 强制 16:9 比例的投影幕布容器 */
+        .presentation-container {
+            width: 100vw;
+            height: 56.25vw;
+            max-height: 100vh;
+            max-width: 177.78vh;
+            background-color: var(--bg-color);
+            position: relative;
+            box-shadow: 0 0 50px rgba(0,0,0,0.5);
+            overflow: hidden;
+        }
+
+        /* 顶部进度条 */
+        .progress-bar {
+            position: absolute;
+            top: 0;
+            left: 0;
+            height: 4px;
+            background-color: var(--accent-color);
+            transition: width 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            z-index: 10;
+        }
+
+        /* 幻灯片基础结构 */
+        .slide {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.4s ease-in-out;
+            display: flex;
+            flex-direction: column;
+            padding: 5% 8%; /* 严谨的版心留白 */
+            box-sizing: border-box;
+        }
+
+        .slide.active {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        /* 头部：固定的章回与细线 */
+        .slide-header {
+            flex: 0 0 auto; /* 固定高度，不参与伸缩 */
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 1.5vh;
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-end;
+        }
+
+        .slide-header h2 {
+            margin: 0;
+            font-family: var(--font-serif);
+            font-size: 2.5vw;
+            font-weight: normal;
+            color: var(--text-color);
+            letter-spacing: 1px;
+        }
+
+        .slide-header .chapter {
+            font-family: var(--font-mono);
+            font-size: 1vw;
+            color: var(--accent-color);
+            letter-spacing: 2px;
+        }
+
+        /* 内容区：核心修复点 —— 动态垂直居中 */
+        .slide-content {
+            flex: 1 1 auto; /* 占据头部和尾部之外的所有剩余空间 */
+            display: flex;
+            flex-direction: column;
+            justify-content: center; /* 单栏内容的绝对垂直居中！ */
+            padding: 2vh 0;
+        }
+
+        /* 双栏布局的动态垂直居中 */
+        .slide-content.two-column {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            column-gap: 5vw;
+            align-content: center; /* 网格整体垂直居中！ */
+            align-items: start;
+        }
+
+        /* 封面与结尾的独立居中 */
+        .cover {
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            padding: 0; /* 封面不需要外围 padding */
+        }
+        .cover .title-wrapper {
+            border-top: 2px solid var(--text-color);
+            border-bottom: 2px solid var(--text-color);
+            padding: 4vh 0;
+            width: 75%;
+        }
+        .cover h1 {
+            font-family: var(--font-serif);
+            font-size: 3.5vw;
+            font-weight: normal;
+            margin: 0;
+            line-height: 1.3;
+        }
+        .cover .subtitle {
+            margin-top: 2vh;
+            font-size: 1.5vw;
+            font-family: var(--font-sans);
+            font-weight: 300;
+            letter-spacing: 2px;
+            color: #666;
+        }
+        .cover .author {
+            margin-top: 5vh;
+            font-family: var(--font-mono);
+            font-size: 1.1vw;
+            color: var(--text-color);
+            line-height: 1.6;
+        }
+
+        /* 排版与字体细节 */
+        p {
+            font-size: 1.5vw;
+            line-height: 1.7;
+            margin: 0 0 2vh 0;
+            color: #222;
+        }
+
+        ul {
+            padding-left: 1.5vw;
+            margin: 0 0 2vh 0;
+        }
+
+        li {
+            font-size: 1.5vw;
+            line-height: 1.8;
+            margin-bottom: 1.5vh;
+            color: #222;
+        }
+
+        li::marker {
+            color: var(--accent-color);
+            font-size: 1.2em;
+        }
+
+        strong {
+            font-weight: 600;
+            color: var(--text-color);
+        }
+        
+        .highlight {
+            color: var(--accent-color);
+            font-family: var(--font-serif);
+            font-style: italic;
+            font-weight: bold;
+        }
+
+        code {
+            font-family: var(--font-mono);
+            background-color: #eceadd;
+            padding: 0.2vh 0.6vw;
+            font-size: 0.9em;
+            color: var(--mono-color);
+            border: 1px solid #d1cbb8;
+        }
+
+        /* 引言区块 */
+        .blockquote {
+            border-left: 5px solid var(--accent-color);
+            padding-left: 1.5vw;
+            margin: 2vh 0;
+            font-family: var(--font-serif);
+            font-size: 1.8vw;
+            font-style: italic;
+            color: var(--text-color);
+            line-height: 1.5;
+        }
+
+        /* 底部信息栏 */
+        .slide-footer {
+            flex: 0 0 auto;
+            border-top: 1px solid var(--border-color);
+            padding-top: 1.5vh;
+            display: flex;
+            justify-content: space-between;
+            font-family: var(--font-mono);
+            font-size: 0.9vw;
+            color: #888;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="presentation-container">
+        <!-- 进度条 -->
+        <div class="progress-bar" id="progress-bar"></div>
+
+        <!-- Slide 1: 封面 -->
+        <div class="slide active cover" id="slide-1">
+            <div class="title-wrapper">
+                <h1>自揭老底：我用 AI 做了哪些事儿</h1>
+                <div class="subtitle">关于提示词、Skill 演进与数字系统构建的学术考察</div>
+            </div>
+            <div class="author">
+                REPORTER: MAOMAOTECH25<br>
+                DATE: 2025
+            </div>
+        </div>
+
+        <!-- Slide 2: 缘起 -->
+        <div class="slide" id="slide-2">
+            <div class="slide-header">
+                <h2>核心动机与研究基点</h2>
+                <span class="chapter">SECTION I. THE PREMISE</span>
+            </div>
+            <!-- 内容区：由于内容较少，已通过 Flex 自动垂直居中 -->
+            <div class="slide-content">
+                <p>外部触发源自业界（如 Kimi PM）对人才考核的两个底层指标：</p>
+                <ul>
+                    <li>具体的工程产出物（<strong>Work Delivered</strong>）</li>
+                    <li>算力消耗指标（<strong>Token Consumption</strong>）</li>
+                </ul>
+                <div class="blockquote">
+                    “这不仅是对 AI 使用工具的审视，更是对个体在 AI 时代生产力的量化。”
+                </div>
+                <p>本文由此出发，全面盘点从 <code>Prompt</code> 到 <code>Skill</code>，再到「个人记忆系统」的范式变迁。</p>
+            </div>
+            <div class="slide-footer">
+                <span>maomaotech25 / The AI Trajectory</span>
+                <span class="page-num">02</span>
+            </div>
+        </div>
+
+        <!-- Slide 3: 演进路径 -->
+        <div class="slide" id="slide-3">
+            <div class="slide-header">
+                <h2>技术实践的阶梯式演进</h2>
+                <span class="chapter">SECTION II. EVOLUTION</span>
+            </div>
+            <div class="slide-content">
+                <p>项目复杂度呈现清晰的三级递进关系，每一步均是对 AI 控制力的重塑：</p>
+                <ul>
+                    <li><strong>第一阶 (启蒙与单点)：</strong> 以提示词与生图起步。通过 <code>Vibe Coding</code> 产出 140+ HTML 网页（桌面时钟、血压工具）。</li>
+                    <li><strong>第二阶 (迭代与中等复杂度)：</strong> 深度交流的产物。例如「医院住院系统」原型，历经十余次重构，探索大模型在微调中的极限。</li>
+                    <li><strong>第三阶 (系统化与独立应用)：</strong> 全权利用 <code>Kiro / ClaudeCode / Trae</code> 落地“电子药箱”（含说明书、过期预警）。</li>
+                </ul>
+                <p><strong>当前的现实壁垒：</strong> 遭遇算力（顶尖模型额度消耗快）与设备（Windows CLI 限制，向往 Mac 环境）的双重瓶颈。</p>
+            </div>
+            <div class="slide-footer">
+                <span>maomaotech25 / The AI Trajectory</span>
+                <span class="page-num">03</span>
+            </div>
+        </div>
+
+        <!-- Slide 4: Skill 的哲学 (双栏自动居中) -->
+        <div class="slide" id="slide-4">
+            <div class="slide-header">
+                <h2>关于 Skill 的哲学重构</h2>
+                <span class="chapter">SECTION III. SKILLS DECONSTRUCTED</span>
+            </div>
+            <div class="slide-content two-column">
+                <div>
+                    <p><span class="highlight">思维的原子化</span></p>
+                    <p>Skill 不仅是任务载体，更是人类思考逻辑的切片。复杂的任务（如考研数据分析）被强制拆解为：<br>
+                    <code>信息爬取 → 向量化处理 → 极值计算 → 多模态报告输出</code></p>
+                    
+                    <p><span class="highlight">算力驱动定律</span></p>
+                    <p>弱模型执行 Skill 效率极度低下；顶尖模型配合 Agent，甚至可实现“无 Skill”运作。</p>
+                </div>
+                <div>
+                    <p><span class="highlight">机器的长效记忆</span></p>
+                    <p>将 AI 在执行任务（如读取飞书文档）中踩坑、报错的漫长过程固化为 Skill。<strong>这本质上是在为 AI 建立避免重复犯错的记忆系统。</strong></p>
+                    
+                    <p><span class="highlight">独立创见</span></p>
+                    <p>独创了首个结合中医体系的健康管理 Skill，以及深度挖掘用户认知的知识提取 Skill。</p>
+                </div>
+            </div>
+            <div class="slide-footer">
+                <span>maomaotech25 / The AI Trajectory</span>
+                <span class="page-num">04</span>
+            </div>
+        </div>
+
+        <!-- Slide 5: 奥卡姆剃刀 -->
+        <div class="slide" id="slide-5">
+            <div class="slide-header">
+                <h2>技术中立：稳定性与奥卡姆剃刀法则</h2>
+                <span class="chapter">SECTION IV. METHODOLOGY</span>
+            </div>
+            <div class="slide-content">
+                <div class="blockquote">
+                    “能用 Python 脚本解决的事情，就不要动用 AI Agent 去处理。”
+                </div>
+                <p><strong>算力经济学悖论：</strong></p>
+                <ul>
+                    <li>案例：处理长篇 Markdown 文档的“中英文自动加空格”。</li>
+                    <li>若调用大模型：极度消耗 Token，效率低下且存在不确定性。</li>
+                    <li>若调用 Python 脚本：零 Token 消耗，绝对稳定，杀鸡焉用宰牛刀。</li>
+                </ul>
+                <p><strong>对工具的祛魅：</strong></p>
+                <p>无需神化 <code>OpenClaw</code>（小龙虾）。它能做的事 ClaudeCode 都能做，其核心价值仅在于打破大厂壁垒：无任务合法性监视、免排队 API 调用。</p>
+            </div>
+            <div class="slide-footer">
+                <span>maomaotech25 / The AI Trajectory</span>
+                <span class="page-num">05</span>
+            </div>
+        </div>
+
+        <!-- Slide 6: 终极构想 -->
+        <div class="slide" id="slide-6">
+            <div class="slide-header">
+                <h2>终极命题：个人记忆系统的时空架构</h2>
+                <span class="chapter">SECTION V. THE MAGNUM OPUS</span>
+            </div>
+            <div class="slide-content two-column">
+                <div>
+                    <p>超越当前开源社区中充斥整活属性的“同事/前女友复刻 Skill”，构建严肃的<strong>数字分身底座</strong>，需横跨三大维度：</p>
+                    <ul>
+                        <li><span class="highlight">过去 (Past)：</span> 回溯并存储个人十年甚至半生的底层记忆与数据。</li>
+                        <li><span class="highlight">现在 (Present)：</span> 矩阵化记录（晨间规划 + 运动健康 + 学习记录 + 睡前复盘）。</li>
+                    </ul>
+                </div>
+                <div>
+                    <ul>
+                        <li><span class="highlight">未来 (Future)：</span> 引入 Github <code>Mirofish</code> 舆情预测算法机制。基于个人的历史数据参数，对未来的决策与行为结果进行精准的沙盘推演。</li>
+                    </ul>
+                    <div class="blockquote" style="font-size: 1.5vw;">
+                        “AI 时代加速了万物的发展，也同样加速了人类对于自我宿命与世界理解的解构。”
+                    </div>
+                </div>
+            </div>
+            <div class="slide-footer">
+                <span>maomaotech25 / The AI Trajectory</span>
+                <span class="page-num">06</span>
+            </div>
+        </div>
+
+        <!-- Slide 7: 深水区 -->
+        <div class="slide" id="slide-7">
+            <div class="slide-header">
+                <h2>前沿深水区：底层协作与调度</h2>
+                <span class="chapter">SECTION VI. FRONTIER EXPLORATION</span>
+            </div>
+            <div class="slide-content">
+                <p>超越 Vibe Coding，向机器劳动力的深度调度进军：</p>
+                <ul>
+                    <li><strong>Agent 协作：</strong> <code>ClaudeCode Agents Team</code> 的内部并行通信，实现子代理的自治沟通与合并输出。</li>
+                    <li><strong>Harness (数字驾驭)：</strong> 探讨控制权归属，参考中国古典政治“三省六部制”架构，对 AI 职能进行政体化管理与权限约束。</li>
+                    <li><strong>CLI 终局革命：</strong> 
+                        <br>以 ClaudeCode 为大脑，联合 Gemini / CodeX 为执行器的多端协同。
+                        <br><span class="highlight">“过去的 CLI 是写给人看的；现在的 CLI 纯粹是为 AI 调用的。”</span></li>
+                </ul>
+            </div>
+            <div class="slide-footer">
+                <span>maomaotech25 / The AI Trajectory</span>
+                <span class="page-num">07</span>
+            </div>
+        </div>
+
+        <!-- Slide 8: 结束语 -->
+        <div class="slide cover" id="slide-8">
+            <div class="title-wrapper" style="border: none;">
+                <h1 style="font-size: 2.8vw; margin-bottom: 3vh;">"技术最终会退回到基础设施的位置，<br>而浮现出来的，将是人的思维本身。"</h1>
+                <div class="subtitle" style="color: var(--accent-color);">END OF REPORT</div>
+            </div>
+            <div class="author" style="margin-top: 2vh;">
+                Thank you.
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        let currentSlide = 0;
+        const slides = document.querySelectorAll('.slide');
+        const progressBar = document.getElementById('progress-bar');
+        const totalSlides = slides.length;
+
+        function updateSlide() {
+            slides.forEach((slide, index) => {
+                if (index === currentSlide) {
+                    slide.classList.add('active');
+                } else {
+                    slide.classList.remove('active');
+                }
+            });
+            // 计算进度条百分比
+            const progress = ((currentSlide + 1) / totalSlides) * 100;
+            progressBar.style.width = progress + '%';
+        }
+
+        function nextSlide() {
+            if (currentSlide < totalSlides - 1) {
+                currentSlide++;
+                updateSlide();
+            }
+        }
+
+        function prevSlide() {
+            if (currentSlide > 0) {
+                currentSlide--;
+                updateSlide();
+            }
+        }
+
+        // 键盘监听（空格、回车、右键 -> 下一页，左键 -> 上一页）
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'ArrowRight' || e.key === 'Space' || e.key === 'Enter') {
+                nextSlide();
+            } else if (e.key === 'ArrowLeft') {
+                prevSlide();
+            }
+        });
+
+        // 鼠标点击（屏幕右侧一半点击下一页，左侧上一页）
+        document.addEventListener('click', (e) => {
+            if (e.clientX > window.innerWidth / 2) {
+                nextSlide();
+            } else {
+                prevSlide();
+            }
+        });
+
+        // 启动初始化
+        updateSlide();
+    </script>
+</body>
+</html>

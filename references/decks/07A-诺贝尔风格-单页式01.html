@@ -1,0 +1,328 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI 实践学术汇报 - 诺贝尔风格 V2</title>
+    <style>
+        :root {
+            --nobel-blue: #0A1F44;
+            --nobel-gold: #C5A059;
+            --nobel-cream: #F9F7F2;
+            --nobel-text: #1A1A1A;
+        }
+
+        * { box-sizing: border-box; }
+
+        body, html {
+            margin: 0;
+            padding: 0;
+            height: 100%;
+            font-family: "Georgia", "Times New Roman", "Source Han Serif SC", "Noto Serif CJK SC", serif;
+            background-color: var(--nobel-cream);
+            color: var(--nobel-text);
+            overflow: hidden;
+        }
+
+        /* 核心居中容器 */
+        .slide-container {
+            width: 100vw;
+            height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            perspective: 1000px;
+        }
+
+        .slide {
+            width: 90%;
+            max-width: 1200px;
+            height: 85%;
+            background: white;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.15);
+            border: 1px solid var(--nobel-gold);
+            padding: 80px;
+            display: none;
+            flex-direction: column;
+            justify-content: center; /* 垂直居中内容 */
+            align-items: center;    /* 水平居中内容 */
+            text-align: center;      /* 文字默认居中 */
+            position: relative;
+            animation: slideIn 0.6s ease-out;
+        }
+
+        .slide.active {
+            display: flex;
+        }
+
+        @keyframes slideIn {
+            from { opacity: 0; transform: scale(0.95); }
+            to { opacity: 1; transform: scale(1); }
+        }
+
+        /* 装饰元素 */
+        .gold-frame {
+            position: absolute;
+            top: 25px;
+            bottom: 25px;
+            left: 25px;
+            right: 25px;
+            border: 1px solid var(--nobel-gold);
+            pointer-events: none;
+        }
+
+        .seal {
+            position: absolute;
+            top: 50px;
+            right: 60px;
+            width: 100px;
+            height: 100px;
+            border: 2px double var(--nobel-gold);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--nobel-gold);
+            font-size: 12px;
+            font-weight: bold;
+            transform: rotate(15deg);
+        }
+
+        /* 字体与排版强化 */
+        h1 {
+            color: var(--nobel-blue);
+            font-size: 4rem; /* 极大标题 */
+            margin: 0 0 20px 0;
+            line-height: 1.2;
+        }
+
+        h2 {
+            color: var(--nobel-gold);
+            font-size: 2.2rem;
+            text-transform: uppercase;
+            letter-spacing: 4px;
+            margin-bottom: 40px;
+            border-bottom: 1px solid var(--nobel-gold);
+            display: inline-block;
+            padding-bottom: 10px;
+        }
+
+        .content {
+            font-size: 1.6rem; /* 调大正文字体 */
+            line-height: 1.8;
+            width: 100%;
+            max-width: 1000px;
+        }
+
+        .content ul {
+            display: inline-block;
+            text-align: left; /* 列表内容左对齐以便阅读，但整体在幻灯片中居中 */
+            padding-left: 0;
+            list-style: none;
+        }
+
+        .content li {
+            margin-bottom: 20px;
+            padding-left: 35px;
+            position: relative;
+        }
+
+        .content li::before {
+            content: "§"; /* 更具学术感的符号 */
+            color: var(--nobel-gold);
+            position: absolute;
+            left: 0;
+            font-weight: bold;
+        }
+
+        .highlight {
+            color: var(--nobel-blue);
+            font-weight: 600;
+            border-bottom: 1px solid var(--nobel-blue);
+        }
+
+        .footer {
+            position: absolute;
+            bottom: 60px;
+            width: 100%;
+            text-align: center;
+            font-size: 1.1rem;
+            color: #888;
+            font-style: italic;
+        }
+
+        /* 导航 */
+        .nav {
+            position: fixed;
+            bottom: 20px;
+            display: flex;
+            gap: 30px;
+        }
+
+        button {
+            background: var(--nobel-blue);
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            font-size: 1rem;
+            cursor: pointer;
+            letter-spacing: 1px;
+            transition: 0.3s;
+        }
+
+        button:hover {
+            background: var(--nobel-gold);
+        }
+
+        .page-num {
+            position: absolute;
+            bottom: 35px;
+            right: 50px;
+            color: var(--nobel-gold);
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+
+<div class="slide-container">
+    <div class="slide active">
+        <div class="gold-frame"></div>
+        <div class="seal">STOCKHOLM<br>SWEDEN<br>2026</div>
+        <h2>Academic Presentation</h2>
+        <h1>自揭老底：<br>我到底用 AI 做了哪些事儿？</h1>
+        <p style="font-size: 1.8rem;">—— 关于 Token 消耗与 AI 协作范式的深度盘点 ——</p>
+        <div class="footer">汇报人：王晨 (晨) | 2026年4月</div>
+    </div>
+
+    <div class="slide">
+        <div class="gold-frame"></div>
+        <h2>研究起因与思考</h2>
+        <div class="content">
+            <ul>
+                <li><span class="highlight">源起：</span>受 Kimi PM 启发，重新审视 Token 消耗量与实际产出的关系。</li>
+                <li><span class="highlight">启蒙：</span>从最初的提示词（Prompt）策略与 AI 生图视觉审美切入。</li>
+                <li><span class="highlight">演进：</span>经历“提示词 -> 技能（Skill） -> 养龙虾（Agent）”的完整进化路径。</li>
+            </ul>
+        </div>
+        <div class="footer">思考：Token 的消耗代表了人机协同的深度。</div>
+    </div>
+
+    <div class="slide">
+        <div class="gold-frame"></div>
+        <h2>Vibe Coding：140+ 网页实验</h2>
+        <div class="content">
+            <p>通过 Claude 与 Gemini 的深度交流，将创意转化为功能实体：</p>
+            <ul>
+                <li><span class="highlight">医院住院系统原型：</span>历经十多次迭代，打磨交互细节。</li>
+                <li><span class="highlight">电子药箱（医药管理系统）：</span>记录使用说明、保质期及分类，解决家庭用药痛点。</li>
+                <li><span class="highlight">审美实体化：</span>开发数据卡片生成工具，实现设计美学的快速复刻与下载。</li>
+            </ul>
+        </div>
+        <div class="footer">关键工具：ClaudeCode / Trae / Kiro (Spec 模式)</div>
+    </div>
+
+    <div class="slide">
+        <div class="gold-frame"></div>
+        <h2>Skill：思维的模块化革命</h2>
+        <div class="content">
+            <ul>
+                <li><span class="highlight">原子化拆解：</span>以考研数据分析为例，将任务细化为获取、清洗、向量化、报告产出。</li>
+                <li><span class="highlight">记忆系统化：</span>将踩过的坑（如飞书 CLI 部署报错）总结成 Skill，赋予 AI“长期记忆”。</li>
+                <li><span class="highlight">健康管理体系：</span>首创融合“运动、健身、数据分析、中医”四条线的健康 Skill。</li>
+            </ul>
+        </div>
+        <div class="footer">见解：Skill 的本质是人类观察事物角度的重塑。</div>
+    </div>
+
+    <div class="slide">
+        <div class="gold-frame"></div>
+        <h2>技术选择：稳定性高于一切</h2>
+        <div class="content">
+            <ul>
+                <li><span class="highlight">杀鸡焉用宰牛刀：</span>能用 Python 脚本解决的（如中英文空格处理），决不动用 Agent。</li>
+                <li><span class="highlight">解密“小龙虾” (OpenClaw)：</span>相比大厂工具，OpenClaw 具备无排队、自由度高、无任务监视的优势。</li>
+                <li><span class="highlight">模型优先论：</span>没有技巧，最好的技巧就是使用最顶尖的模型。</li>
+            </ul>
+        </div>
+        <div class="footer">局限：资金与设备（渴望 Mac 系统）是当前的主要瓶颈。</div>
+    </div>
+
+    <div class="slide">
+        <div class="gold-frame"></div>
+        <h2>个人记忆系统：数字化分身</h2>
+        <div class="content">
+            <p>基于“过去、现在、未来”三个维度的宏大构想：</p>
+            <ul>
+                <li><span class="highlight">过去：</span>生命历史的数字化存档（工程量巨大的回忆录）。</li>
+                <li><span class="highlight">现在：</span>通过日常规划、运动、学习、记录四类 Skill 实现实时记录。</li>
+                <li><span class="highlight">未来：</span>借鉴 Mirofish 项目，利用历史数据进行个人发展与决策预测。</li>
+            </ul>
+        </div>
+        <div class="footer">核心理念：记忆系统是每一个人在 AI 时代的至关重要资产。</div>
+    </div>
+
+    <div class="slide">
+        <div class="gold-frame"></div>
+        <h2>前沿探索：Agent 协作与驾驭</h2>
+        <div class="content">
+            <ul>
+                <li><span class="highlight">Harness (驾驭)：</span>探索“人驾驭 Agent”或“Agent 相互驾驭”的深层底层。</li>
+                <li><span class="highlight">Agent 协作：</span>向往“大脑（ClaudeCode）+ 执行助手（Gemini/CodeX）”的多 CLI 联动方案。</li>
+                <li><span class="highlight">CLI 的角色：</span>命令行窗口正在从“给人看”转向“给 AI 看”。</li>
+            </ul>
+        </div>
+        <div class="footer">愿景：在 Windows 阵地之外，探索更纯粹的 AI 生态。</div>
+    </div>
+
+    <div class="slide">
+        <div class="gold-frame"></div>
+        <h2>汇报总结</h2>
+        <div class="content">
+            <h1 style="font-size: 3rem; color: var(--nobel-gold);">加速理解世界</h1>
+            <p>AI 时代不仅加速了万物发展，更加速了我们对于自身的理解。</p>
+            <p style="font-style: italic; margin-top: 30px;">“做网页、做 Skill、做项目，三者相通，终归于解决问题的稳定性。”</p>
+        </div>
+        <div class="footer">感谢评审委员与在座嘉宾</div>
+    </div>
+</div>
+
+<div class="nav">
+    <button onclick="prevSlide()">← PREVIOUS</button>
+    <button onclick="nextSlide()">NEXT STEP →</button>
+</div>
+
+<script>
+    let currentSlide = 0;
+    const slides = document.querySelectorAll('.slide');
+
+    function updatePageNum() {
+        // 移除旧页码
+        document.querySelectorAll('.page-num').forEach(el => el.remove());
+        // 添加新页码
+        const num = document.createElement('div');
+        num.className = 'page-num';
+        num.innerText = `SESSION ${currentSlide + 1} / ${slides.length}`;
+        slides[currentSlide].appendChild(num);
+    }
+
+    function showSlide(n) {
+        slides[currentSlide].classList.remove('active');
+        currentSlide = (n + slides.length) % slides.length;
+        slides[currentSlide].classList.add('active');
+        updatePageNum();
+    }
+
+    function nextSlide() { showSlide(currentSlide + 1); }
+    function prevSlide() { showSlide(currentSlide - 1); }
+
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'ArrowRight' || e.key === ' ') nextSlide();
+        if (e.key === 'ArrowLeft') prevSlide();
+    });
+
+    updatePageNum();
+</script>
+
+</body>
+</html>

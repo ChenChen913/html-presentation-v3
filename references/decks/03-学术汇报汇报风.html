@@ -1,0 +1,905 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>自揭老底：我到底用AI做了哪些事儿</title>
+    <!-- 引入学术风字体：思源宋体 (Serif) & 霞鹜文楷 (Sans/Kai) -->
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;600;900&display=swap">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/cn-fontsource-lxgw-wen-kai-gb-screen/font.css">
+    <style>
+        /* ==========================================
+           1. Viewport Scale & Core Reset
+        ========================================== */
+        html, body { margin: 0; padding: 0; height: 100%; overflow-x: hidden; background: #E8ECEF; }
+        html { scroll-snap-type: y mandatory; scroll-behavior: smooth; }
+
+        :root {
+            --bg-canvas: #E8ECEF;
+            --bg-slide: #FFFFFF;
+            --text-main: #202124;
+            --text-muted: #5F6368;
+            --accent-primary: #0A3663; /* 学术深蓝 (Oxford Blue) */
+            --accent-secondary: #8B1A1A; /* 学术深红 (Dark Red) */
+            --border-color: #D5D8DC;
+            --font-title: 'Times New Roman', 'Noto Serif SC', serif;
+            --font-body: 'Arial', 'LXGW WenKai GB Screen', sans-serif;
+            --font-math: 'Cambria Math', 'Times New Roman', serif;
+        }
+
+        body { font-family: var(--font-body); color: var(--text-main); }
+
+        .slide {
+            width: 100vw; height: 100vh; height: 100dvh;
+            scroll-snap-align: start;
+            position: relative; display: flex;
+            align-items: center; justify-content: center;
+            z-index: 10;
+        }
+
+        .slide-inner {
+            width: 1280px; height: 720px;
+            box-sizing: border-box;
+            flex-shrink: 0;
+            position: relative;
+            transform-origin: center center;
+            display: flex; flex-direction: column;
+            padding: 48px 64px;
+            background: var(--bg-slide);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            border: 1px solid #CCC;
+            z-index: 10;
+        }
+
+        /* Mobile Layout */
+        @media (max-width: 767px) {
+            html { scroll-snap-type: none; }
+            .slide { height: auto; min-height: 100svh; overflow: visible; scroll-snap-align: none; padding: 20px 0; }
+            .slide-inner { width: 100% !important; height: auto !important; transform: none !important; padding: clamp(24px, 5vw, 40px); box-shadow: none; border: none; }
+            .nav-dots { display: none; }
+        }
+
+        /* ==========================================
+           2. Academic Slide Components
+        ========================================== */
+        /* Header */
+        .slide-header {
+            border-bottom: 2px solid var(--accent-primary);
+            padding-bottom: 12px;
+            margin-bottom: 32px;
+            position: relative;
+        }
+        .slide-header::after {
+            content: ''; position: absolute; bottom: -5px; left: 0; width: 100%; height: 1px; background: var(--accent-primary);
+        }
+        .slide-title {
+            font-family: var(--font-title);
+            font-size: 46px;
+            color: var(--accent-primary);
+            font-weight: 600;
+            margin: 0;
+            letter-spacing: 1px;
+        }
+
+        /* Content Area */
+        .slide-content {
+            flex: 1; display: flex; flex-direction: column;
+            position: relative; z-index: 10;
+        }
+
+        /* Footer (Added dynamically via JS) */
+        .slide-footer {
+            margin-top: auto;
+            border-top: 1px solid var(--border-color);
+            padding-top: 16px;
+            display: flex;
+            justify-content: space-between;
+            font-size: 16px;
+            color: var(--text-muted);
+            font-family: var(--font-body);
+        }
+
+        /* 文字排版 */
+        .text-body { font-size: 24px; line-height: 1.8; font-weight: 400; }
+        .text-body p { margin-bottom: 20px; }
+        .text-body b, .text-body strong { color: var(--accent-primary); font-weight: 600; }
+        .text-body ul, .text-body ol { margin-left: 32px; margin-bottom: 20px; }
+        .text-body li { margin-bottom: 16px; padding-left: 8px; }
+        .text-body li::marker { color: var(--accent-primary); }
+
+        /* Blockquote (Academic Citation Style) */
+        .academic-quote {
+            background: #F8F9FA;
+            border-left: 6px solid var(--accent-primary);
+            padding: 24px 32px;
+            margin: 24px 0;
+            font-family: var(--font-title);
+            font-size: 26px;
+            color: var(--accent-primary);
+            font-style: italic;
+        }
+
+        /* Tables & Grids */
+        .layout-split { display: flex; gap: 60px; align-items: flex-start; height: 100%; }
+        .layout-split > * { flex: 1; }
+        .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 40px; }
+        .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 32px; }
+
+        /* Academic Box/Card */
+        .academic-box {
+            border: 1px solid var(--border-color);
+            border-top: 4px solid var(--accent-primary);
+            background: #FAFAFA;
+            padding: 32px;
+            height: 100%;
+            box-sizing: border-box;
+        }
+        .academic-box-red { border-top-color: var(--accent-secondary); }
+        .box-title {
+            font-family: var(--font-title);
+            font-size: 30px;
+            color: var(--accent-primary);
+            margin-bottom: 20px;
+            border-bottom: 1px dashed var(--border-color);
+            padding-bottom: 10px;
+        }
+
+        /* 标签 */
+        .tag-label {
+            display: inline-block; padding: 4px 12px;
+            font-size: 16px; font-weight: bold;
+            background: #E8ECEF; border: 1px solid #CCC;
+            color: var(--text-muted); margin-bottom: 16px;
+            font-family: var(--font-title);
+        }
+
+        /* Cover Slide Specifics */
+        .cover-slide { text-align: center; justify-content: center; align-items: center; }
+        .cover-title { font-family: var(--font-title); font-size: 72px; color: var(--accent-primary); margin-bottom: 24px; line-height: 1.2; }
+        .cover-subtitle { font-family: var(--font-body); font-size: 32px; color: var(--text-muted); margin-bottom: 60px; }
+        .cover-author { font-family: var(--font-title); font-size: 24px; color: var(--text-main); line-height: 1.8; }
+        .cover-date { font-size: 20px; color: var(--text-muted); margin-top: 12px; }
+
+        /* Math Formulas */
+        .formula-container {
+            font-family: var(--font-math);
+            text-align: center;
+            margin: 16px 0;
+            font-size: 36px;
+            overflow: visible;
+            padding: 4px 0 10px 0;
+        }
+
+        /* English Abstract */
+        .abstract-text {
+            font-family: var(--font-title);
+            font-size: 22px;
+            line-height: 1.8;
+            text-align: justify;
+        }
+        .abstract-text p { margin-bottom: 24px; }
+
+        /* ==========================================
+           3. UI Controls & Animations
+        ========================================== */
+        .nav-dots {
+            position: fixed; right: 24px; top: 50%; transform: translateY(-50%);
+            display: flex; flex-direction: column; gap: 12px; z-index: 100;
+        }
+        .dot {
+            width: 10px; height: 10px; border-radius: 50%;
+            background: #CCC; cursor: pointer; transition: all 0.3s;
+        }
+        .dot.active { background: var(--accent-primary); transform: scale(1.3); }
+
+        .keyboard-hint {
+            position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%);
+            font-size: 14px; color: #888; z-index: 100;
+            transition: opacity 0.5s; pointer-events: none;
+            font-family: var(--font-body);
+        }
+
+        /* Academic Subtle Animations */
+        .reveal { opacity: 0; transform: translateY(15px); transition: all 0.8s ease-out; }
+        .slide.visible .reveal { opacity: 1; transform: translateY(0); }
+        
+        .reveal:nth-child(1) { transition-delay: 0.1s; }
+        .reveal:nth-child(2) { transition-delay: 0.2s; }
+        .reveal:nth-child(3) { transition-delay: 0.3s; }
+        .reveal:nth-child(4) { transition-delay: 0.4s; }
+        
+        [contenteditable="true"]:focus { outline: 1px dashed var(--accent-primary); background: rgba(10, 54, 99, 0.03); }
+    </style>
+</head>
+<body>
+    <nav class="nav-dots"></nav>
+
+    <!-- Slide 1: 封面 -->
+    <section class="slide">
+        <div class="slide-inner cover-slide">
+            <div class="reveal">
+                <h1 class="cover-title" contenteditable="true">自揭老底：<br>我到底用AI做了哪些事儿</h1>
+                <div class="cover-subtitle" contenteditable="true">从 Prompt 到 Skill，再到自主智能体 (Agents)</div>
+                <div class="cover-author" contenteditable="true">
+                    <div><b>汇报人：</b> AI实践者</div>
+                    <div><b>研究领域：</b> 提示词工程与自动化工作流</div>
+                    <div class="cover-date">2026年4月</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Slide 2: 引言 -->
+    <section class="slide">
+        <div class="slide-inner">
+            <header class="slide-header">
+                <h2 class="slide-title" contenteditable="true">1. 研究背景：一个有趣的招聘标准</h2>
+            </header>
+            <div class="slide-content" style="justify-content: center;">
+                <div class="text-body reveal" contenteditable="true" style="max-width: 1000px; margin: 0 auto;">
+                    <p>在近期的行业观察中，一位负责 Kimi 产品方向的 PM 提出了一个令人印象深刻的招聘考察维度：</p>
+                    
+                    <div class="academic-quote">
+                        "评估候选人对 AI 的掌握程度，不仅要看其具体产出的工作成果，更要考察其后台的 <strong>Token 消耗量</strong>。"
+                    </div>
+                    
+                    <p>这引发了一个学术与实践并重的核心问题：<br><b>Token 的消耗规模，究竟在多大程度上反映了人类对 AI 工具的有效利用深度？</b></p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Slide 3: 三个阶段总览 -->
+    <section class="slide">
+        <div class="slide-inner">
+            <header class="slide-header">
+                <h2 class="slide-title" contenteditable="true">2. 理论框架：我用 AI 的三个阶段</h2>
+            </header>
+            <div class="slide-content" style="justify-content: center;">
+                <div class="grid-3">
+                    <div class="academic-box reveal">
+                        <div class="tag-label">Phase I</div>
+                        <h3 class="box-title" contenteditable="true">提示词时代 (Prompt)</h3>
+                        <div class="text-body" contenteditable="true" style="font-size: 20px;">
+                            以“一问一答”为特征的交互模式。重点在于寻找和优化指令模板（Prompt Engineering），探索大语言模型的生成边界与逻辑局限。
+                        </div>
+                    </div>
+                    <div class="academic-box reveal">
+                        <div class="tag-label">Phase II</div>
+                        <h3 class="box-title" contenteditable="true">技能时代 (Skill)</h3>
+                        <div class="text-body" contenteditable="true" style="font-size: 20px;">
+                            引入工作流（Workflow）概念。将复杂任务拆解，结合特定的业务上下文，将 AI 封装成具有特定功能的工程化工具。
+                        </div>
+                    </div>
+                    <div class="academic-box reveal">
+                        <div class="tag-label">Phase III</div>
+                        <h3 class="box-title" contenteditable="true">智能体时代 (Agents)</h3>
+                        <div class="text-body" contenteditable="true" style="font-size: 20px;">
+                            转向自主智能体（Autonomous Agents）。人类仅设定终极目标与环境边界，AI 自主完成任务的规划、工具调用、执行与反思。
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Slide 4: 阶段一 -->
+    <section class="slide">
+        <div class="slide-inner">
+            <header class="slide-header">
+                <h2 class="slide-title" contenteditable="true">3. 阶段一剖析：提示词 (Prompt) 的交互特征</h2>
+            </header>
+            <div class="slide-content">
+                <div class="text-body reveal" style="max-width: 900px; margin: 20px auto 0;">
+                    <p>在初始阶段，用户试图通过<b>单次交互（Zero-shot 或 Few-shot）</b>解决所有问题。</p>
+                    <ul contenteditable="true">
+                        <li><b>交互模式：</b> 一问一答，直接向大模型索要最终结果。</li>
+                        <li><b>典型场景：</b> “帮我写一篇1000字的文章”、“生成一个营销标题”。</li>
+                        <li><b>真实体感：</b> 投入大量时间查阅 Prompt 技巧，但生成结果往往缺乏深度，存在“机器味”。</li>
+                        <li><b>产出质量：</b> 逻辑发散不受控，AI 的表现具有极强的随机性（Stochasticity）。</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Slide 5: 阶段一痛点 -->
+    <section class="slide">
+        <div class="slide-inner">
+            <header class="slide-header">
+                <h2 class="slide-title" contenteditable="true">3.1 核心痛点：Prompt 并非万能</h2>
+            </header>
+            <div class="slide-content" style="justify-content: center;">
+                <div class="grid-2" style="align-items: center;">
+                    <div class="academic-box academic-box-red reveal" style="padding: 40px; height: auto;">
+                        <h3 class="box-title" style="color: var(--accent-secondary);" contenteditable="true">上下文缺失困境 (Context Deficit)</h3>
+                        <div class="text-body" contenteditable="true">
+                            <p>为什么大模型总是写不出符合预期的内容？</p>
+                            <p>本质原因是 <b>缺少上下文 (Context)</b>。</p>
+                            <p style="margin-top: 20px;">单靠指令无法弥补信息差。模型不了解具体的业务背景、受众画像，也无法获取人类在历史试错中积累的隐性经验。</p>
+                        </div>
+                    </div>
+                    <div class="reveal">
+                        <div class="academic-quote" contenteditable="true" style="border-left-color: var(--accent-secondary); color: var(--text-main); font-style: normal; font-family: var(--font-body); margin: 0;">
+                            <b>核心结论：</b><br><br>
+                            我们需要建立一种结构化的机制，将隐性知识和业务流程系统性地“喂”给 AI。
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Slide 6: 阶段二 -->
+    <section class="slide">
+        <div class="slide-inner">
+            <header class="slide-header">
+                <h2 class="slide-title" contenteditable="true">4. 阶段二演进：技能 (Skill) 与工作流引入</h2>
+            </header>
+            <div class="slide-content">
+                <div class="text-body reveal" style="max-width: 900px; margin: 20px auto 0;">
+                    <p>为了克服 Prompt 的随机性，我们引入了<b>工作流编排 (Workflow Orchestration)</b>。</p>
+                    <ul contenteditable="true">
+                        <li><b>范式转变：</b> 从“对话框许愿” 走向严格的“工程化拆解”。</li>
+                        <li><b>运作机制：</b> 将复杂任务拆分为多个确定性节点（Nodes），结合特定上下文，固化为可复用的“技能”。</li>
+                        <li><b>工具生态：</b> 广泛依托 Coze、Dify 等平台进行流程可视化编排。</li>
+                        <li><b>核心优势：</b> 使得大模型的输出变得可控、稳定，使其真正具备作为生产力工具的条件。</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Slide 7: 阶段二实践 -->
+    <section class="slide">
+        <div class="slide-inner">
+            <header class="slide-header">
+                <h2 class="slide-title" contenteditable="true">4.1 实践案例：构建实用型工程工具</h2>
+            </header>
+            <div class="slide-content" style="justify-content: center;">
+                <div class="grid-2">
+                    <div class="academic-box reveal">
+                        <div class="tag-label">案例一：个人提效</div>
+                        <h3 class="box-title" contenteditable="true">沉浸式翻译与分析器</h3>
+                        <div class="text-body" style="font-size: 20px;" contenteditable="true">
+                            <p>突破简单的中英互译映射。</p>
+                            <p>通过多节点工作流，要求 AI 强制输出翻译的<b>思考过程</b>与语境分析，进而进行多语言的精准适配与专业术语校准。</p>
+                        </div>
+                    </div>
+                    <div class="academic-box reveal">
+                        <div class="tag-label">案例二：团队赋能</div>
+                        <h3 class="box-title" contenteditable="true">SEO 关键词研究助手</h3>
+                        <div class="text-body" style="font-size: 20px;" contenteditable="true">
+                            <p>基于公司实际业务场景开发的专属应用。</p>
+                            <p>将原本繁琐的 SEO 竞品分析、长尾词挖掘等标准操作流程（SOP）封装成一键式运行的后台技能。</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Slide 8: Workflow 的局限性 -->
+    <section class="slide">
+        <div class="slide-inner">
+            <header class="slide-header">
+                <h2 class="slide-title" contenteditable="true">4.2 技术瓶颈：Workflow 的内在局限性</h2>
+            </header>
+            <div class="slide-content">
+                <div class="text-body reveal" style="max-width: 900px; margin: 40px auto 0;">
+                    <p>尽管“技能”和“工作流”极大提升了系统的稳定性，但其本质是 <b>线性的、静态的 (Linear & Static)</b> 决策树。</p>
+                    <div class="academic-quote" style="margin: 30px 0;">
+                        <ul contenteditable="true" style="margin: 0; font-size: 24px; font-family: var(--font-body); font-style: normal; color: var(--text-main);">
+                            <li><b>异常处理能力弱：</b> 遇到预设条件之外的异常输入，整个流程容易中断报错。</li>
+                            <li><b>缺乏动态自适应：</b> 无法根据外部环境的实时反馈进行自我逻辑调整。</li>
+                            <li><b>依赖人工触发：</b> 仍然需要人类作为发起者去“点击运行”或提供大量的前置结构化输入。</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Slide 9: 阶段三 -->
+    <section class="slide">
+        <div class="slide-inner">
+            <header class="slide-header">
+                <h2 class="slide-title" contenteditable="true">5. 阶段三跨越：自主智能体 (Autonomous Agents)</h2>
+            </header>
+            <div class="slide-content">
+                <div class="text-body reveal" style="max-width: 900px; margin: 20px auto 0;">
+                    <p>为了打破静态工作流的限制，研究重心转向了能够进行复杂推理的智能体系统。</p>
+                    <ul contenteditable="true">
+                        <li><b>范式隐喻（“养龙虾”）：</b> 意味着人类不再干预执行的每一步，而是建立生态系统。</li>
+                        <li><b>人类的角色转移：</b> 从“操作员”转变为“养殖者”。负责提供计算环境、授权工具库（API）。</li>
+                        <li><b>AI 的角色转移：</b> 成为具有自主性的实体。给定终极目标后，Agent 自主完成任务拆解、工具选择、结果验证与失败反思（Reflection）。</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Slide 10: 养虾实践 -->
+    <section class="slide">
+        <div class="slide-inner">
+            <header class="slide-header">
+                <h2 class="slide-title" contenteditable="true">5.1 实践应用：全自动内容生产流</h2>
+            </header>
+            <div class="slide-content" style="justify-content: center;">
+                <div class="grid-3">
+                    <div class="academic-box reveal" style="padding: 24px;">
+                        <h3 class="box-title" style="font-size: 24px; border: none; margin-bottom: 10px;" contenteditable="true">
+                            <span style="font-size: 32px; font-weight: 900;">1.</span> 泛源数据抓取
+                        </h3>
+                        <p class="text-body" style="font-size: 18px;" contenteditable="true">Agent 自动轮询订阅的 RSS 与全网资讯源，利用爬虫工具获取原文，并进行初步的数据清洗与去重。</p>
+                    </div>
+                    <div class="academic-box reveal" style="padding: 24px;">
+                        <h3 class="box-title" style="font-size: 24px; border: none; margin-bottom: 10px;" contenteditable="true">
+                            <span style="font-size: 32px; font-weight: 900;">2.</span> 自主思考与生成
+                        </h3>
+                        <p class="text-body" style="font-size: 18px;" contenteditable="true">AI 独立评估资讯的知识密度与传播价值，依据预设的品牌语调规范，撰写具备深度的分析文章。</p>
+                    </div>
+                    <div class="academic-box reveal" style="padding: 24px;">
+                        <h3 class="box-title" style="font-size: 24px; border: none; margin-bottom: 10px;" contenteditable="true">
+                            <span style="font-size: 32px; font-weight: 900;">3.</span> 分发与执行
+                        </h3>
+                        <p class="text-body" style="font-size: 18px;" contenteditable="true">调用外部 CMS 接口，将排版完毕的 Markdown 内容自动分发至指定博客或社交平台，实现全程 Zero-touch。</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Slide 11: 养龙虾的关键要素 -->
+    <section class="slide">
+        <div class="slide-inner">
+            <header class="slide-header">
+                <h2 class="slide-title" contenteditable="true">5.2 成功构建 Agent 的关键要素</h2>
+            </header>
+            <div class="slide-content" style="justify-content: center;">
+                <div class="grid-2">
+                    <div class="academic-box reveal" style="padding: 40px;">
+                        <h3 class="box-title" contenteditable="true">丰富的工具授权 (Tool Empowerment)</h3>
+                        <div class="text-body" style="font-size: 20px;" contenteditable="true">
+                            <p>Agent 的能力边界取决于它能调用什么工具。必须赋予其联网搜索、文件读写、甚至是执行代码（Code Interpreter）的权限。</p>
+                            <p style="margin-top: 16px;">工具集越完备，其解决非结构化问题的维度就越高。</p>
+                        </div>
+                    </div>
+                    <div class="academic-box reveal" style="padding: 40px;">
+                        <h3 class="box-title" contenteditable="true">严谨的边界与目标 (Boundary & Objective)</h3>
+                        <div class="text-body" style="font-size: 20px;" contenteditable="true">
+                            <p>模糊的指令会导致灾难性后果。目标必须可被量化与检验（例如：“每日抓取特定站点的Top3新闻并总结”）。</p>
+                            <p style="margin-top: 16px;">同时需要设定超时中断与纠错机制，以防止模型陷入推理死胡同，造成计算资源的无谓损耗。</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Slide 12: 代价与价值 -->
+    <section class="slide">
+        <div class="slide-inner">
+            <header class="slide-header">
+                <h2 class="slide-title" contenteditable="true">6. 经济学视角：自主性的代价与真正价值</h2>
+            </header>
+            <div class="slide-content" style="justify-content: center;">
+                <div class="grid-2">
+                    <div class="academic-box academic-box-red reveal" style="padding: 40px; height: auto;">
+                        <h3 class="box-title" style="color: var(--accent-secondary);" contenteditable="true">不可避免的算力代价</h3>
+                        <div class="text-body" style="font-size: 22px;" contenteditable="true">
+                            <p>进入 Agent 阶段后，最直观的现象是：</p>
+                            <p style="font-size: 36px; font-weight: 600; color: var(--accent-secondary); margin-top: 24px;">Token 的消耗量<br>呈指数级飙升。</p>
+                        </div>
+                    </div>
+                    <div class="academic-box reveal" style="padding: 40px; height: auto;">
+                        <h3 class="box-title" contenteditable="true">范式跃迁的独立价值</h3>
+                        <div class="text-body" contenteditable="true" style="font-size: 22px;">
+                            <p>海量 Token 消耗的背后，是 Agent 在后台不间断地执行：逻辑推理、工具调用、失败验证、重试修正。</p>
+                            <p style="color: var(--accent-primary); margin-top: 24px; font-weight: 600; font-size: 28px;">人类不再是“驱动器”，<br>AI 真正成为了“数字劳动力”。</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Slide 13: 总结 -->
+    <section class="slide">
+        <div class="slide-inner">
+            <header class="slide-header">
+                <h2 class="slide-title" contenteditable="true">7. 结论：回应最初的命题</h2>
+            </header>
+            <div class="slide-content" style="justify-content: center; align-items: center;">
+                <div class="reveal" style="text-align: center; max-width: 900px;">
+                    <p class="text-body" style="font-size: 32px; margin-bottom: 40px;" contenteditable="true">
+                        回归到 Kimi PM 提出的招聘标准，Token 消耗量代表了什么？
+                    </p>
+                    <div class="academic-quote" style="font-size: 42px; line-height: 1.6; text-align: left;" contenteditable="true">
+                        它客观地衡量了用户使用 AI 的层次——<br>
+                        即从将 AI 视为<strong>“知识百科”</strong>的查询阶段，<br>
+                        深入到将 AI 视为<strong>“全天候数字员工”</strong>的部署阶段。
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Slide 14: 结语 -->
+    <section class="slide">
+        <div class="slide-inner">
+            <div class="slide-content" style="justify-content: center; align-items: center; text-align: center;">
+                <div class="reveal">
+                    <h1 class="cover-title" style="font-size: 56px;" contenteditable="true">打破对话框的隐形边界</h1>
+                    <p class="text-body" style="font-size: 28px; margin: 30px 0 50px;" contenteditable="true">去构建工程化工作流，去释放自主智能体。</p>
+                    <div style="display: inline-block; border: 2px solid var(--accent-primary); color: var(--accent-primary); padding: 16px 40px; font-family: var(--font-title); font-size: 26px; font-weight: bold;" contenteditable="true">
+                        Question: 你的下一个 AI 阶段是什么？
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Slide 15: 数学公式测试 -->
+    <section class="slide">
+        <div class="slide-inner">
+            <header class="slide-header">
+                <h2 class="slide-title" contenteditable="true">数学公式测试 (Mathematical Formula Test)</h2>
+            </header>
+            <div class="slide-content" style="justify-content: center; gap: 10px;">
+                <div class="text-body reveal" contenteditable="true" style="margin-bottom: 0;">
+                    <p style="margin-bottom: 4px;">在学术研究与物理计算中，复杂的方程式不可或缺：</p>
+                </div>
+
+                <div class="academic-box reveal" style="margin-top: 0; padding: 14px 28px;">
+                    <h3 class="box-title" style="font-size: 20px; margin-bottom: 6px; border: none; padding-bottom: 0;">1. 薛定谔方程 (Schrödinger Equation)</h3>
+                    <div class="formula-container" style="margin: 4px 0;">
+                        <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
+                            <mrow>
+                                <mi>i</mi>
+                                <mi>ℏ</mi>
+                                <mfrac>
+                                    <mi>∂</mi>
+                                    <mrow>
+                                        <mi>∂</mi>
+                                        <mi>t</mi>
+                                    </mrow>
+                                </mfrac>
+                                <mi>Ψ</mi>
+                                <mo stretchy="false">(</mo>
+                                <mi mathvariant="bold">r</mi>
+                                <mo>,</mo>
+                                <mi>t</mi>
+                                <mo stretchy="false">)</mo>
+                                <mo>=</mo>
+                                <mrow>
+                                    <mo>[</mo>
+                                    <mo>−</mo>
+                                    <mfrac>
+                                        <msup>
+                                            <mi>ℏ</mi>
+                                            <mn>2</mn>
+                                        </msup>
+                                        <mrow>
+                                            <mn>2</mn>
+                                            <mi>m</mi>
+                                        </mrow>
+                                    </mfrac>
+                                    <msup>
+                                        <mi>∇</mi>
+                                        <mn>2</mn>
+                                    </msup>
+                                    <mo>+</mo>
+                                    <mi>V</mi>
+                                    <mo stretchy="false">(</mo>
+                                    <mi mathvariant="bold">r</mi>
+                                    <mo>,</mo>
+                                    <mi>t</mi>
+                                    <mo stretchy="false">)</mo>
+                                    <mo>]</mo>
+                                </mrow>
+                                <mi>Ψ</mi>
+                                <mo stretchy="false">(</mo>
+                                <mi mathvariant="bold">r</mi>
+                                <mo>,</mo>
+                                <mi>t</mi>
+                                <mo stretchy="false">)</mo>
+                            </mrow>
+                        </math>
+                    </div>
+                </div>
+
+                <div class="academic-box reveal" style="margin-top: 8px; padding: 14px 28px;">
+                    <h3 class="box-title" style="font-size: 20px; margin-bottom: 6px; border: none; padding-bottom: 0;">2. 正态分布概率密度函数 (Normal Distribution)</h3>
+                    <div class="formula-container" style="margin: 4px 0;">
+                        <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
+                            <mrow>
+                                <mi>f</mi>
+                                <mo stretchy="false">(</mo>
+                                <mi>x</mi>
+                                <mo stretchy="false">)</mo>
+                                <mo>=</mo>
+                                <mfrac>
+                                    <mn>1</mn>
+                                    <mrow>
+                                        <mi>σ</mi>
+                                        <msqrt>
+                                            <mn>2</mn>
+                                            <mi>π</mi>
+                                        </msqrt>
+                                    </mrow>
+                                </mfrac>
+                                <msup>
+                                    <mi>e</mi>
+                                    <mrow>
+                                        <mo>−</mo>
+                                        <mfrac>
+                                            <msup>
+                                                <mrow>
+                                                    <mo stretchy="false">(</mo>
+                                                    <mi>x</mi>
+                                                    <mo>−</mo>
+                                                    <mi>μ</mi>
+                                                    <mo stretchy="false">)</mo>
+                                                </mrow>
+                                                <mn>2</mn>
+                                            </mrow>
+                                            <mrow>
+                                                <mn>2</mn>
+                                                <msup>
+                                                    <mi>σ</mi>
+                                                    <mn>2</mn>
+                                                </msup>
+                                            </mrow>
+                                        </mfrac>
+                                    </mrow>
+                                </msup>
+                            </mrow>
+                        </math>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Slide 16: 进阶数学公式测试 -->
+    <section class="slide">
+        <div class="slide-inner">
+            <header class="slide-header">
+                <h2 class="slide-title" contenteditable="true">进阶数学公式测试 (Advanced Math Test)</h2>
+            </header>
+            <div class="slide-content" style="justify-content: center; gap: 14px;">
+                <div class="grid-2" style="gap: 16px;">
+                    <div class="academic-box reveal" style="padding: 18px 28px; height: auto;">
+                        <h3 class="box-title" style="font-size: 22px; border: none; margin-bottom: 0;">微积分与极限 (Calculus & Limits)</h3>
+                        <div class="formula-container" style="font-size: 28px; margin: 8px 0;">
+                            <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
+                                <mrow>
+                                    <munder>
+                                        <mo>lim</mo>
+                                        <mrow><mi>n</mi><mo>→</mo><mi>∞</mi></mrow>
+                                    </munder>
+                                    <munderover>
+                                        <mo>∑</mo>
+                                        <mrow><mi>i</mi><mo>=</mo><mn>1</mn></mrow>
+                                        <mi>n</mi>
+                                    </munderover>
+                                    <mfrac>
+                                        <mn>1</mn>
+                                        <mi>n</mi>
+                                    </mfrac>
+                                    <mi>f</mi>
+                                    <mo stretchy="false">(</mo>
+                                    <mfrac><mi>i</mi><mi>n</mi></mfrac>
+                                    <mo stretchy="false">)</mo>
+                                    <mo>=</mo>
+                                    <msubsup>
+                                        <mo>∫</mo>
+                                        <mn>0</mn>
+                                        <mn>1</mn>
+                                    </msubsup>
+                                    <mi>f</mi><mo stretchy="false">(</mo><mi>x</mi><mo stretchy="false">)</mo>
+                                    <mi>d</mi><mi>x</mi>
+                                </mrow>
+                            </math>
+                        </div>
+                    </div>
+                    
+                    <div class="academic-box reveal" style="padding: 18px 28px; height: auto;">
+                        <h3 class="box-title" style="font-size: 22px; border: none; margin-bottom: 0;">泰勒展开 (Taylor Series)</h3>
+                        <div class="formula-container" style="font-size: 28px; margin: 8px 0;">
+                            <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
+                                <mrow>
+                                    <msup><mi>e</mi><mi>x</mi></msup>
+                                    <mo>=</mo>
+                                    <munderover>
+                                        <mo>∑</mo>
+                                        <mrow><mi>n</mi><mo>=</mo><mn>0</mn></mrow>
+                                        <mi>∞</mi>
+                                    </munderover>
+                                    <mfrac>
+                                        <msup><mi>x</mi><mi>n</mi></msup>
+                                        <mrow><mi>n</mi><mo>!</mo></mrow>
+                                    </mfrac>
+                                    <mo>=</mo>
+                                    <mn>1</mn><mo>+</mo><mi>x</mi><mo>+</mo>
+                                    <mfrac><msup><mi>x</mi><mn>2</mn></msup><mn>2</mn></mfrac><mo>+</mo>
+                                    <mo>⋯</mo>
+                                </mrow>
+                            </math>
+                        </div>
+                    </div>
+                    
+                    <div class="academic-box reveal" style="padding: 18px 28px; grid-column: span 2; height: auto;">
+                        <h3 class="box-title" style="font-size: 22px; border: none; margin-bottom: 0;">矩阵与行列式 (Matrices & Determinants)</h3>
+                        <div class="formula-container" style="font-size: 28px; margin: 8px 0;">
+                            <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
+                                <mrow>
+                                    <mi>A</mi>
+                                    <mo>=</mo>
+                                    <mrow>
+                                        <mo>[</mo>
+                                        <mtable>
+                                            <mtr><mtd><msub><mi>a</mi><mn>11</mn></msub></mtd><mtd><msub><mi>a</mi><mn>12</mn></msub></mtd></mtr>
+                                            <mtr><mtd><msub><mi>a</mi><mn>21</mn></msub></mtd><mtd><msub><mi>a</mi><mn>22</mn></msub></mtd></mtr>
+                                        </mtable>
+                                        <mo>]</mo>
+                                    </mrow>
+                                    <mo>,</mo>
+                                    <mspace width="1em"/>
+                                    <mo>det</mo><mo stretchy="false">(</mo><mi>A</mi><mo stretchy="false">)</mo>
+                                    <mo>=</mo>
+                                    <mrow>
+                                        <mo>|</mo>
+                                        <mtable>
+                                            <mtr><mtd><msub><mi>a</mi><mn>11</mn></msub></mtd><mtd><msub><mi>a</mi><mn>12</mn></msub></mtd></mtr>
+                                            <mtr><mtd><msub><mi>a</mi><mn>21</mn></msub></mtd><mtd><msub><mi>a</mi><mn>22</mn></msub></mtd></mtr>
+                                        </mtable>
+                                        <mo>|</mo>
+                                    </mrow>
+                                    <mo>=</mo>
+                                    <msub><mi>a</mi><mn>11</mn></msub><msub><mi>a</mi><mn>22</mn></msub>
+                                    <mo>-</mo>
+                                    <msub><mi>a</mi><mn>12</mn></msub><msub><mi>a</mi><mn>21</mn></msub>
+                                </mrow>
+                            </math>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Slide 17: 英文内容测试 -->
+    <section class="slide">
+        <div class="slide-inner">
+            <header class="slide-header">
+                <h2 class="slide-title" contenteditable="true">英文内容测试 (English Content Test)</h2>
+            </header>
+            <div class="slide-content" style="justify-content: center;">
+                <div class="academic-box reveal" style="padding: 36px 50px 24px 50px;">
+                    <h3 class="box-title" style="font-size: 26px; border: none; margin-bottom: 20px;">Abstract: The Evolution of Autonomous Agents</h3>
+                    <div class="abstract-text" contenteditable="true">
+                        <p>
+                            The transition from prompt-based interactions to autonomous intelligent agents represents a profound paradigm shift in artificial intelligence. While traditional Large Language Models (LLMs) rely heavily on meticulously crafted prompts to generate single-turn responses, modern workflow orchestrations and autonomous agents introduce multi-step reasoning, tool utilization, and self-reflection mechanisms.
+                        </p>
+                        <p>
+                            This presentation explores the trajectory of this evolution, highlighting the fundamental limitations of static workflows and emphasizing the exponential increase in computational token consumption as a necessary trade-off for true autonomy. Ultimately, we argue that the future of AI utility lies not in acting as a passive encyclopedia, but as an active, self-correcting digital workforce.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <div class="keyboard-hint">使用 ↑↓ 方向键翻页 (Press Up/Down Arrow to navigate)</div>
+
+    <script>
+        // 动态添加学术页脚
+        document.addEventListener('DOMContentLoaded', () => {
+            const inners = document.querySelectorAll('.slide-inner');
+            const total = inners.length;
+            inners.forEach((inner, index) => {
+                if(index === 0) return; // 封面不加页脚
+                const footer = document.createElement('footer');
+                footer.className = 'slide-footer';
+                footer.innerHTML = `
+                    <span>AI Technology Symposium 2026</span>
+                    <span>Page ${index + 1} / ${total}</span>
+                `;
+                inner.appendChild(footer);
+            });
+        });
+
+        // 核心控制器：控制视图缩放
+        class ScaleController {
+            constructor(refWidth = 1280, refHeight = 720) {
+                this.refW = refWidth;
+                this.refH = refHeight;
+                this.inners = document.querySelectorAll('.slide-inner');
+                this.resize();
+                window.addEventListener('resize', () => this.resize());
+            }
+            isMobile() { return window.innerWidth < 768; }
+            resize() {
+                if (this.isMobile()) {
+                    this.inners.forEach(inner => { inner.style.transform = ''; });
+                    return;
+                }
+                const s = Math.min(window.innerWidth / this.refW, window.innerHeight / this.refH);
+                this.inners.forEach(inner => { inner.style.transform = `scale(${s})`; });
+            }
+        }
+
+        // 幻灯片演示控制
+        class SlidePresentation {
+            constructor() {
+                this.slides = document.querySelectorAll('.slide');
+                this.dots = document.querySelector('.nav-dots');
+                this.current = 0;
+                this.setupObserver();
+                this.setupKeyboard();
+                this.setupDots();
+                this.hideHintOnScroll();
+            }
+            setupObserver() {
+                const obs = new IntersectionObserver(entries => {
+                    entries.forEach(e => {
+                        if (e.isIntersecting) {
+                            e.target.classList.add('visible');
+                            this.current = [...this.slides].indexOf(e.target);
+                            this.updateDots();
+                        }
+                    });
+                }, { threshold: 0.5 });
+                this.slides.forEach(s => obs.observe(s));
+            }
+            setupKeyboard() {
+                window.addEventListener('keydown', e => {
+                    if (e.target.tagName.toLowerCase() === 'textarea' || e.target.isContentEditable) return; // 编辑时禁用翻页
+                    if (e.key === 'ArrowDown' || e.key === 'ArrowRight' || e.key === ' ') {
+                        e.preventDefault(); this.go(this.current + 1);
+                    } else if (e.key === 'ArrowUp' || e.key === 'ArrowLeft') {
+                        e.preventDefault(); this.go(this.current - 1);
+                    }
+                });
+            }
+            setupDots() {
+                if(!this.dots) return;
+                this.slides.forEach((s, i) => {
+                    const dot = document.createElement('div');
+                    dot.className = 'dot';
+                    dot.onclick = () => this.go(i);
+                    this.dots.appendChild(dot);
+                });
+                this.updateDots();
+            }
+            updateDots() {
+                if(!this.dots) return;
+                this.dots.querySelectorAll('.dot').forEach((d, i) => {
+                    d.classList.toggle('active', i === this.current);
+                });
+            }
+            go(i) {
+                if (i >= 0 && i < this.slides.length) {
+                    this.slides[i].scrollIntoView({ behavior: 'smooth' });
+                }
+            }
+            hideHintOnScroll() {
+                const hint = document.querySelector('.keyboard-hint');
+                if (!hint) return;
+                let hidden = false;
+                window.addEventListener('scroll', () => {
+                    if (!hidden && window.scrollY > 50) {
+                        hint.style.opacity = '0';
+                        hidden = true;
+                    }
+                });
+            }
+        }
+        
+        new ScaleController();
+        new SlidePresentation();
+    </script>
+</body>
+</html>
