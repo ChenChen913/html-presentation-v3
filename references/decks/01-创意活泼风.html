@@ -18,14 +18,14 @@
             --neo-yellow: #FFCC00;
             --neo-red: #FF3B30;
             --neo-blue: #007AFF;
-            --neo-green: #34C759;
-            --neo-pink: #FF69B4;
+            --neo-green: #289A45;
+            --neo-pink: #FF1E8E;
             --neo-cyan: #32ADE6;
             --neo-purple: #AF52DE;
             --neo-white: #FFFFFF;
             --neo-black: #111111;
-            --font-title: 'YouSheBiaoTiHei', 'Arial Black', sans-serif;
-            --font-body: 'Alibaba PuHuiTi', 'Microsoft YaHei', sans-serif;
+            --font-title: 'YouSheBiaoTiHei', 'Arial Black', system-ui, -apple-system, 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', 'Source Han Sans SC', 'Noto Sans CJK SC', sans-serif;
+            --font-body: 'Alibaba PuHuiTi', system-ui, -apple-system, 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', 'Source Han Sans SC', 'Noto Sans CJK SC', sans-serif;
         }
 
         body { font-family: var(--font-body); color: var(--neo-black); }
@@ -106,7 +106,7 @@
         /* 文字排版 */
         h1, h2, h3, .title-font { font-family: var(--font-title); font-weight: normal; letter-spacing: 2px; }
         
-        .title-main { font-size: 80px; line-height: 1.1; margin-bottom: 24px; color: #000; }
+        .title-main { font-size: 80px; line-height: 1.1; margin-bottom: 24px; color: #1A1A1F; }
         .title-sub { 
             font-size: 32px; background: var(--neo-red); color: #FFF; 
             padding: 12px 24px; border: 4px solid #000; box-shadow: 6px 6px 0 #000;
@@ -152,6 +152,18 @@
         .reveal:nth-child(4), .reveal-scale:nth-child(4) { transition-delay: 0.4s; }
         
         [contenteditable="true"]:focus { outline: none; background: rgba(255,255,255,0.5); }
+        /* ===== 调研笔记：断行优化 =====
+           标题用 balance 让多行标题各处等长，正文用 pretty 避免末行孤字 */
+        h1, h2, h3, h4, [class*="title"], [class*="Title"], .eyebrow, .section-num {
+            text-wrap: balance;
+        }
+        p, li, .text-body, [class*="text-body"], .prose {
+            text-wrap: pretty;
+        }
+        /* ===== 调研笔记 1.4：中文字重上限 700 =====
+           <b>/<strong> 的 UA 默认 font-weight:bolder 在父级 700 时会解析成 900 */
+        b, strong { font-weight: 700; }
+
     </style>
 </head>
 <body>
@@ -430,7 +442,7 @@
                     <p style="font-size: 32px; margin-bottom: 32px;" contenteditable="true">
                         Token 消耗量代表了什么？
                     </p>
-                    <div style="font-size: 40px; color: var(--neo-red); font-family: var(--font-title); line-height: 1.4;" contenteditable="true">
+                    <div style="font-size: 40px; color: var(--neo-red); font-family: var(--font-title); line-height: 1.5;" contenteditable="true">
                         它代表了你从“把AI当百科”<br>到“把AI当员工”的转变深度。
                     </div>
                 </div>

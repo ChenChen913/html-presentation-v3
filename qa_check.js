@@ -99,6 +99,8 @@ async function checkOne(page, file, opts) {
   const url = 'file:///' + path.resolve(file).replace(/\\/g, '/');
   await page.goto(url, { waitUntil: 'load' });
   try { await page.waitForLoadState('networkidle', { timeout: 6000 }); } catch (e) {}
+  // 等字体真正就绪再量：CDN 字体到达前后字宽不同，早测会得到假结果
+  try { await page.evaluate(() => document.fonts.ready); } catch (e) {}
   await page.waitForTimeout(1000);
 
   // 自动判定形态：有 .slide-inner = 滚动式；只有 .slide = 单页式
@@ -172,11 +174,17 @@ async function checkOne(page, file, opts) {
   let targets = paths;
   if (args.includes('--all')) {
     targets = [];
+    // 风格网页统一放在 references/decks/；decks-before 是改动前基线，不参与质检
+    const dirsToScan = [path.join(__dirname, 'references', 'decks')];
     for (const d of fs.readdirSync(__dirname)) {
       const full = path.join(__dirname, d);
-      if (!fs.statSync(full).isDirectory() || d.startsWith('.') || d === 'references' || d === 'upload' || d === 'outputs') continue;
-      for (const f of fs.readdirSync(full)) {
-        if (f.endsWith('.html')) targets.push(path.join(full, f));
+      if (!fs.statSync(full).isDirectory() || d.startsWith('.') || d === 'references' || d === 'upload' || d === 'outputs' || d === 'node_modules') continue;
+      dirsToScan.push(full);
+    }
+    for (const dir of dirsToScan) {
+      if (!fs.existsSync(dir)) continue;
+      for (const f of fs.readdirSync(dir)) {
+        if (f.endsWith('.html')) targets.push(path.join(dir, f));
       }
     }
     targets.sort();
@@ -185,6 +193,18 @@ async function checkOne(page, file, opts) {
   const chrome = findChrome();
   const browser = await chromium.launch(chrome ? { executablePath: chrome } : {});
   const page = await browser.newPage({ viewport: { width: 1280, height: 720 }, deviceScaleFactor: 1 });
+
+  // --offline：掐断一切外部请求，强制走系统字体回退。
+  // CDN 字体（Google Fonts / jsdelivr）在国内常不可达，这才是客户真正会看到的样子，
+  // 也是唯一的确定性测量方式 —— 否则同一份 deck 会因网络抖动一会儿 0 页问题、一会儿 11 页。
+  if (args.includes('--offline')) {
+    await page.route('**://**', route => {
+      const u = route.request().url();
+      if (u.startsWith('file://') || u.startsWith('data:') || u.startsWith('blob:')) return route.continue();
+      return route.abort();
+    });
+    console.log('[offline] 已阻断外部请求，按系统字体回退测量\n');
+  }
 
   let bad = 0;
   const report = {};

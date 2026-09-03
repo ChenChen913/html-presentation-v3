@@ -15,14 +15,14 @@
         html { scroll-snap-type: y mandatory; scroll-behavior: smooth; }
 
         :root {
-            --ted-red: #E62B1E;
-            --ted-black: #000000;
+            --ted-red: #E32619;
+            --ted-black: #1A1A1F;
             --ted-dark: #111111;
             --ted-gray: #333333;
             --ted-light-gray: #AAAAAA;
             --ted-white: #FFFFFF;
-            --font-title: 'Alibaba PuHuiTi', 'Noto Sans SC', sans-serif;
-            --font-body: 'Noto Sans SC', sans-serif;
+            --font-title: 'Alibaba PuHuiTi', 'Noto Sans SC', system-ui, -apple-system, 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', 'Source Han Sans SC', 'Noto Sans CJK SC', sans-serif;
+            --font-body: 'Noto Sans SC', system-ui, -apple-system, 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', 'Source Han Sans SC', 'Noto Sans CJK SC', sans-serif;
             --font-math: 'Cambria Math', 'Times New Roman', serif;
         }
 
@@ -67,7 +67,7 @@
         .slide-content { flex: 1; display: flex; flex-direction: column; position: relative; z-index: 10; justify-content: center; }
 
         /* 极致排版 */
-        h1, h2, h3 { font-family: var(--font-title); font-weight: 900; margin: 0; line-height: 1.2; letter-spacing: 1px; }
+        h1, h2, h3 { font-family: var(--font-title); font-weight: 700; margin: 0; line-height: 1.2; letter-spacing: 1px; }
         
         .huge-title { font-size: 90px; margin-bottom: 20px; }
         .slide-title { font-size: 56px; margin-bottom: 40px; }
@@ -79,7 +79,9 @@
         .slide.bg-red .text-body { color: rgba(255,255,255,0.9); }
         
         .text-body p { margin-bottom: 24px; }
-        .text-body b, .text-body strong { color: var(--ted-white); font-weight: 700; }
+        .text-body b, .text-body strong { font-weight: 700; }
+        .slide:not(.bg-white) .text-body b, .slide:not(.bg-white) .text-body strong { color: var(--ted-white); }
+        .slide.bg-white .text-body b, .slide.bg-white .text-body strong { color: var(--ted-red); }
         .slide.bg-white .text-body b { color: var(--ted-black); }
 
         /* 列表极简处理 */
@@ -95,7 +97,7 @@
             font-family: var(--font-title);
             font-size: 56px;
             font-weight: 700;
-            line-height: 1.4;
+            line-height: 1.5;
             text-align: center;
             margin: 0 auto;
             max-width: 1000px;
@@ -106,7 +108,7 @@
         .massive-number {
             font-family: var(--font-title);
             font-size: 180px;
-            font-weight: 900;
+            font-weight: 700;
             color: var(--ted-red);
             line-height: 1;
             margin-bottom: 20px;
@@ -158,6 +160,18 @@
         .reveal:nth-child(4), .reveal-fade:nth-child(4) { transition-delay: 0.7s; }
         
         [contenteditable="true"]:focus { outline: none; border-bottom: 2px solid var(--ted-red); }
+        /* ===== 调研笔记：断行优化 =====
+           标题用 balance 让多行标题各处等长，正文用 pretty 避免末行孤字 */
+        h1, h2, h3, h4, [class*="title"], [class*="Title"], .eyebrow, .section-num {
+            text-wrap: balance;
+        }
+        p, li, .text-body, [class*="text-body"], .prose {
+            text-wrap: pretty;
+        }
+        /* ===== 调研笔记 1.4：中文字重上限 700 =====
+           <b>/<strong> 的 UA 默认 font-weight:bolder 在父级 700 时会解析成 900 */
+        b, strong { font-weight: 700; }
+
     </style>
 </head>
 <body>
@@ -170,7 +184,7 @@
                 <div style="width: 60px; height: 6px; background: var(--ted-red); margin: 0 auto 40px;"></div>
                 <h1 class="huge-title" contenteditable="true">自揭老底</h1>
                 <h2 style="font-size: 42px; color: var(--ted-light-gray); font-weight: 300; margin-bottom: 40px;" contenteditable="true">我到底用 AI 做了哪些事儿</h2>
-                <div style="font-size: 20px; color: var(--ted-gray); letter-spacing: 2px; text-transform: uppercase;">FROM PROMPT TO AGENTS</div>
+                <div style="font-size: 20px; color: var(--ted-light-gray); letter-spacing: 2px; text-transform: uppercase;">FROM PROMPT TO AGENTS</div>
             </div>
         </div>
     </section>
@@ -349,21 +363,21 @@
             <div class="slide-content">
                 <div class="grid-3">
                     <div class="minimal-card reveal">
-                        <div style="font-size: 64px; color: var(--ted-red); font-family: var(--font-title); font-weight: 900; margin-bottom: 20px;">STEP 1</div>
+                        <div style="font-size: 64px; color: var(--ted-red); font-family: var(--font-title); font-weight: 700; margin-bottom: 20px;">STEP 1</div>
                         <h3 class="card-title" style="font-size: 28px;" contenteditable="true">数据捕获</h3>
                         <div class="text-body" contenteditable="true" style="font-size: 20px;">
                             Agent 自动轮询 RSS，调用爬虫进行内容提取与数据清洗去重。
                         </div>
                     </div>
                     <div class="minimal-card reveal">
-                        <div style="font-size: 64px; color: var(--ted-red); font-family: var(--font-title); font-weight: 900; margin-bottom: 20px;">STEP 2</div>
+                        <div style="font-size: 64px; color: var(--ted-red); font-family: var(--font-title); font-weight: 700; margin-bottom: 20px;">STEP 2</div>
                         <h3 class="card-title" style="font-size: 28px;" contenteditable="true">推理重构</h3>
                         <div class="text-body" contenteditable="true" style="font-size: 20px;">
                             LLM 独立评估资讯价值，自主思辨，撰写符合品牌语调的长文。
                         </div>
                     </div>
                     <div class="minimal-card reveal">
-                        <div style="font-size: 64px; color: var(--ted-red); font-family: var(--font-title); font-weight: 900; margin-bottom: 20px;">STEP 3</div>
+                        <div style="font-size: 64px; color: var(--ted-red); font-family: var(--font-title); font-weight: 700; margin-bottom: 20px;">STEP 3</div>
                         <h3 class="card-title" style="font-size: 28px;" contenteditable="true">全自动发布</h3>
                         <div class="text-body" contenteditable="true" style="font-size: 20px;">
                             调用 CMS API，将渲染排版完毕的内容推送到指定平台。Zero-touch。
@@ -407,7 +421,7 @@
                     <h3 style="font-size: 42px; margin-bottom: 22px; color: var(--ted-light-gray);" contenteditable="true">算力代价</h3>
                     <div class="text-body" contenteditable="true">
                         <p style="font-size: 22px;">进入这个阶段，最直观的现象是：</p>
-                        <div style="font-family: var(--font-title); font-size: 52px; color: var(--ted-white); font-weight: 900; line-height: 1.18; margin-top: 14px;">
+                        <div class="display-title" style="font-family: var(--font-title); font-size: 52px; color: var(--ted-white); font-weight: 700; line-height: 1.25; margin-top: 14px;">
                             Token 消耗量<br>指数级飙升。
                         </div>
                     </div>
@@ -416,7 +430,7 @@
                     <h3 style="font-size: 42px; margin-bottom: 22px; color: var(--ted-white);" contenteditable="true">独立价值</h3>
                     <div class="text-body" contenteditable="true" style="color: rgba(255,255,255,0.92);">
                         <p style="font-size: 22px; line-height: 1.55;">海量 Token 背后是它在自主执行逻辑推理、工具调用与失败重试。</p>
-                        <div style="font-family: var(--font-title); font-size: 46px; color: var(--ted-white); font-weight: 900; line-height: 1.18; margin-top: 14px;">
+                        <div class="display-title" style="font-family: var(--font-title); font-size: 46px; color: var(--ted-white); font-weight: 700; line-height: 1.25; margin-top: 14px;">
                             人类卸下驱动器身份，<br>AI 成为真正的数字劳工。
                         </div>
                     </div>
@@ -433,7 +447,7 @@
                     <p style="font-size: 36px; color: var(--ted-gray); margin-bottom: 40px; font-weight: 700;" contenteditable="true">
                         回到最初的命题：Token 消耗量到底衡量了什么？
                     </p>
-                    <div style="font-family: var(--font-title); font-size: 64px; font-weight: 900; color: var(--ted-black); line-height: 1.4;" contenteditable="true">
+                    <div class="display-title" style="font-family: var(--font-title); font-size: 64px; font-weight: 700; color: var(--ted-black); line-height: 1.3;" contenteditable="true">
                         它客观映射了你使用 AI 的深度：<br>
                         从 <span style="color: var(--ted-gray); text-decoration: line-through;">"知识百科"</span><br>
                         跃迁至 <span style="color: var(--ted-red);">"全天候数字员工"</span>。
@@ -560,8 +574,8 @@
         <div class="slide-inner">
             <div class="slide-content" style="align-items: center; text-align: center;">
                 <div class="reveal">
-                    <h2 class="slide-title" contenteditable="true" style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; font-weight: 800;">The Paradigm Shift</h2>
-                    <div class="text-body" contenteditable="true" style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; font-size: 32px; line-height: 1.5; max-width: 900px; text-align: justify; margin: 0 auto; letter-spacing: 0.5px; word-wrap: break-word;">
+                    <h2 class="slide-title" contenteditable="true" style="font-family: system-ui, -apple-system, "Segoe UI", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", "Source Han Sans SC", "Noto Sans CJK SC", sans-serif; font-weight: 700;">The Paradigm Shift</h2>
+                    <div class="text-body" contenteditable="true" style="font-family: system-ui, -apple-system, "Segoe UI", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", "Source Han Sans SC", "Noto Sans CJK SC", sans-serif; font-size: 32px; line-height: 1.5; max-width: 900px; text-align: justify; margin: 0 auto; letter-spacing: 0.5px; word-wrap: break-word;">
                         <p>
                             The transition from prompt-based interactions to <strong>autonomous intelligent agents</strong> represents a profound paradigm shift in software architecture.
                         </p>

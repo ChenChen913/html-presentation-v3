@@ -11,7 +11,7 @@
             padding: 0;
             background-color: #0b132b; /* 深学术蓝 */
             color: #f8f9fa; /* 珍珠白 */
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            font-family: system-ui, -apple-system, "Segoe UI", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", "Source Han Sans SC", "Noto Sans CJK SC", sans-serif;
             overflow: hidden;
             display: flex;
             justify-content: center;
@@ -21,7 +21,7 @@
 
         /* 标题衬线字体，彰显严谨庄重 */
         h1, h2, h3 {
-            font-family: "Georgia", "Times New Roman", serif;
+            font-family: "Georgia", "Times New Roman", 'Noto Serif SC', 'Source Han Serif SC', STSong, 'Songti SC', SimSun, serif;
             color: #d4af37; /* 暗金色 */
             font-weight: normal;
             letter-spacing: 2px;
@@ -61,7 +61,7 @@
         .cover .author {
             margin-top: 60px;
             font-size: 1.2rem;
-            font-family: "Georgia", serif;
+            font-family: "Georgia", 'Noto Serif SC', 'Source Han Serif SC', STSong, 'Songti SC', SimSun, serif;
             color: #d4af37;
         }
 
@@ -83,7 +83,7 @@
         li {
             font-size: 1.6rem;
             line-height: 2.2;
-            margin-bottom: 20px;
+            margin-bottom: 12px;
             position: relative;
             padding-left: 30px;
             color: #e2e8f0;
@@ -138,7 +138,7 @@
             color: #d4af37;
             padding: 10px 25px;
             font-size: 1rem;
-            font-family: "Georgia", serif;
+            font-family: "Georgia", 'Noto Serif SC', 'Source Han Serif SC', STSong, 'Songti SC', SimSun, serif;
             cursor: pointer;
             transition: all 0.3s;
             border-radius: 2px;
@@ -150,7 +150,7 @@
         }
 
         #page-num {
-            font-family: "Georgia", serif;
+            font-family: "Georgia", 'Noto Serif SC', 'Source Han Serif SC', STSong, 'Songti SC', SimSun, serif;
             color: #5c677d;
             font-size: 1.2rem;
             letter-spacing: 1px;
@@ -161,6 +161,18 @@
             from { opacity: 0; transform: translateY(10px); }
             to { opacity: 1; transform: translateY(0); }
         }
+        /* ===== 调研笔记：断行优化 =====
+           标题用 balance 让多行标题各处等长，正文用 pretty 避免末行孤字 */
+        h1, h2, h3, h4, [class*="title"], [class*="Title"], .eyebrow, .section-num {
+            text-wrap: balance;
+        }
+        p, li, .text-body, [class*="text-body"], .prose {
+            text-wrap: pretty;
+        }
+        /* ===== 调研笔记 1.4：中文字重上限 700 =====
+           <b>/<strong> 的 UA 默认 font-weight:bolder 在父级 700 时会解析成 900 */
+        b, strong { font-weight: 700; }
+
     </style>
 </head>
 <body>

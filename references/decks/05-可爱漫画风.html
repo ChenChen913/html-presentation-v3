@@ -22,8 +22,9 @@
             --comic-blue: #00E5FF;
             --comic-green: #00E676;
             --comic-purple: #D500F9;
-            --font-title: 'ZCOOL KuaiLe', cursive;
-            --font-body: 'Yozai', sans-serif;
+            --comic-blue-ink: #0094A5; /* 亮青压白底仅 1.54:1，文字用这个（3.63:1）*/
+            --font-title: 'ZCOOL KuaiLe', system-ui, -apple-system, 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', 'Source Han Sans SC', 'Noto Sans CJK SC', sans-serif;
+            --font-body: 'Yozai', system-ui, -apple-system, 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', 'Source Han Sans SC', 'Noto Sans CJK SC', sans-serif;
             --font-math: 'Cambria Math', 'Times New Roman', serif;
         }
 
@@ -162,7 +163,7 @@
         /* 文字排版 */
         .text-body { font-size: 26px; line-height: 1.6; }
         .text-body p { margin-bottom: 20px; }
-        .text-body b, .text-body strong { color: var(--comic-red); font-weight: 900; font-size: 1.1em; }
+        .text-body b, .text-body strong { color: var(--comic-red); font-weight: 700; font-size: 1.1em; }
         
         .text-body ul { margin-left: 0; padding-left: 0; list-style: none; }
         .text-body li { margin-bottom: 16px; padding-left: 36px; position: relative; }
@@ -210,6 +211,18 @@
         .reveal:nth-child(4), .reveal-pop:nth-child(4) { transition-delay: 0.4s; }
         
         [contenteditable="true"]:focus { outline: 4px dashed var(--comic-blue); background: rgba(255,255,255,0.8); border-radius: 8px; }
+        /* ===== 调研笔记：断行优化 =====
+           标题用 balance 让多行标题各处等长，正文用 pretty 避免末行孤字 */
+        h1, h2, h3, h4, [class*="title"], [class*="Title"], .eyebrow, .section-num {
+            text-wrap: balance;
+        }
+        p, li, .text-body, [class*="text-body"], .prose {
+            text-wrap: pretty;
+        }
+        /* ===== 调研笔记 1.4：中文字重上限 700 =====
+           <b>/<strong> 的 UA 默认 font-weight:bolder 在父级 700 时会解析成 900 */
+        b, strong { font-weight: 700; }
+
     </style>
 </head>
 <body>
@@ -267,7 +280,7 @@
                     </div>
                     <div class="comic-panel reveal" style="padding: 30px; transform: translateY(20px);">
                         <div class="narration-box" style="background: var(--comic-white);">Lv.2</div>
-                        <h3 class="box-title" contenteditable="true" style="color: var(--comic-blue);">技能时代<br>(Skill)</h3>
+                        <h3 class="box-title" contenteditable="true" style="color: var(--comic-blue-ink);">技能时代<br>(Skill)</h3>
                         <div class="text-body" contenteditable="true" style="font-size: 22px;">
                             构建流水线。结合上下文，把 AI 封装成解决特定问题的专属工具。
                         </div>
@@ -446,7 +459,7 @@
             <div class="slide-content" style="justify-content: center;">
                 <div class="grid-2">
                     <div class="comic-panel reveal" style="height: auto;">
-                        <div class="narration-box" style="background: var(--comic-blue); color: white;">要点一</div>
+                        <div class="narration-box" style="background: var(--comic-blue); color: var(--comic-black);">要点一</div>
                         <h3 class="box-title" style="margin-top: 10px;" contenteditable="true">给足空间与工具</h3>
                         <div class="text-body" style="font-size: 22px;" contenteditable="true">
                             <p>必须赋予联网搜索、文件读写、代码执行权限。</p>
@@ -480,12 +493,12 @@
                             <div class="action-burst" style="font-size: 32px; padding: 15px; margin-top: 20px; width: 100%;">Token 消耗量<br>指数级飙升！</div>
                         </div>
                     </div>
-                    <div class="comic-panel reveal" style="border-color: var(--comic-blue); height: auto;">
-                        <div class="narration-box" style="background: var(--comic-blue); color: white;">价值是...</div>
+                    <div class="comic-panel reveal" style="border-color: var(--comic-blue-ink); height: auto;">
+                        <div class="narration-box" style="background: var(--comic-blue); color: var(--comic-black);">价值是...</div>
                         <h3 class="box-title" style="margin-top: 10px;" contenteditable="true">范式跃迁</h3>
                         <div class="text-body" contenteditable="true" style="font-size: 24px;">
                             <p>海量 Token 的背后是全自动的：Logic, Tool Call, Verify, Retry。</p>
-                            <p style="color: var(--comic-blue); margin-top: 20px; font-weight: 900; font-size: 28px;">
+                            <p style="color: var(--comic-blue-ink); margin-top: 20px; font-weight: 700; font-size: 28px;">
                                 人类卸载了驱动器身份，<br>AI 真正成为了数字劳工！
                             </p>
                         </div>
@@ -507,7 +520,7 @@
                     <div class="speech-bubble" style="font-size: 36px; line-height: 1.6; text-align: center; margin: 40px auto; width: 80%;" contenteditable="true">
                         它客观映射了你使用 AI 的深度：<br>
                         从 <span style="color: var(--comic-red);">"知识百科"</span> <br>
-                        跃迁至 <span style="color: var(--comic-blue);">"全天候数字员工"</span>！
+                        跃迁至 <span style="color: var(--comic-blue-ink);">"全天候数字员工"</span>！
                     </div>
                 </div>
             </div>
@@ -635,8 +648,8 @@
         <div class="slide-inner">
             <h2 class="section-title reveal" style="background: var(--comic-black); color: var(--comic-yellow);" contenteditable="true">English Translation Test</h2>
             <div class="slide-content" style="justify-content: center;">
-                <div class="comic-panel reveal" style="padding: 40px; height: auto;">
-                    <div class="narration-box" style="background: var(--comic-blue); color: white;">MEANWHILE...</div>
+                <div class="comic-panel reveal" style="padding: 32px; height: auto;">
+                    <div class="narration-box" style="background: var(--comic-blue); color: var(--comic-black);">MEANWHILE...</div>
                     <div class="text-body" contenteditable="true" style="font-family: var(--font-title); font-size: 24px; line-height: 1.8; text-align: justify; margin-top: 10px;">
                         <p>
                             The transition from prompt-based interactions to autonomous intelligent agents represents a profound paradigm shift in software architecture. While traditional Large Language Models (LLMs) rely heavily on meticulously crafted prompts to generate single-turn responses, modern workflow orchestrations and agents introduce multi-step reasoning, API tool utilization, and self-reflection loops.

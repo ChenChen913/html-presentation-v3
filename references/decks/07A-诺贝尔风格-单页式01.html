@@ -8,6 +8,7 @@
         :root {
             --nobel-blue: #0A1F44;
             --nobel-gold: #C5A059;
+            --nobel-gold-ink: #8D6D31; /* 亮金压白底仅 2.46:1，文字用这个（4.81:1）*/
             --nobel-cream: #F9F7F2;
             --nobel-text: #1A1A1A;
         }
@@ -18,7 +19,7 @@
             margin: 0;
             padding: 0;
             height: 100%;
-            font-family: "Georgia", "Times New Roman", "Source Han Serif SC", "Noto Serif CJK SC", serif;
+            font-family: "Georgia", "Times New Roman", 'Noto Serif SC', 'Source Han Serif SC', STSong, 'Songti SC', SimSun, serif;
             background-color: var(--nobel-cream);
             color: var(--nobel-text);
             overflow: hidden;
@@ -82,7 +83,7 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            color: var(--nobel-gold);
+            color: var(--nobel-gold-ink);
             font-size: 12px;
             font-weight: bold;
             transform: rotate(15deg);
@@ -97,7 +98,7 @@
         }
 
         h2 {
-            color: var(--nobel-gold);
+            color: var(--nobel-gold-ink);
             font-size: 2.2rem;
             text-transform: uppercase;
             letter-spacing: 4px;
@@ -129,7 +130,7 @@
 
         .content li::before {
             content: "§"; /* 更具学术感的符号 */
-            color: var(--nobel-gold);
+            color: var(--nobel-gold-ink);
             position: absolute;
             left: 0;
             font-weight: bold;
@@ -147,8 +148,8 @@
             width: 100%;
             text-align: center;
             font-size: 1.1rem;
-            color: #888;
-            font-style: italic;
+            color: #727272;
+            font-style: normal;
         }
 
         /* 导航 */
@@ -178,9 +179,21 @@
             position: absolute;
             bottom: 35px;
             right: 50px;
-            color: var(--nobel-gold);
+            color: var(--nobel-gold-ink);
             font-weight: bold;
         }
+        /* ===== 调研笔记：断行优化 =====
+           标题用 balance 让多行标题各处等长，正文用 pretty 避免末行孤字 */
+        h1, h2, h3, h4, [class*="title"], [class*="Title"], .eyebrow, .section-num {
+            text-wrap: balance;
+        }
+        p, li, .text-body, [class*="text-body"], .prose {
+            text-wrap: pretty;
+        }
+        /* ===== 调研笔记 1.4：中文字重上限 700 =====
+           <b>/<strong> 的 UA 默认 font-weight:bolder 在父级 700 时会解析成 900 */
+        b, strong { font-weight: 700; }
+
     </style>
 </head>
 <body>
@@ -279,9 +292,9 @@
         <div class="gold-frame"></div>
         <h2>汇报总结</h2>
         <div class="content">
-            <h1 style="font-size: 3rem; color: var(--nobel-gold);">加速理解世界</h1>
+            <h1 style="font-size: 3rem; color: var(--nobel-gold-ink);">加速理解世界</h1>
             <p>AI 时代不仅加速了万物发展，更加速了我们对于自身的理解。</p>
-            <p style="font-style: italic; margin-top: 30px;">“做网页、做 Skill、做项目，三者相通，终归于解决问题的稳定性。”</p>
+            <p style="font-style: normal; margin-top: 30px;">“做网页、做 Skill、做项目，三者相通，终归于解决问题的稳定性。”</p>
         </div>
         <div class="footer">感谢评审委员与在座嘉宾</div>
     </div>

@@ -22,8 +22,8 @@
             --accent-primary: #0A3663; /* 学术深蓝 (Oxford Blue) */
             --accent-secondary: #8B1A1A; /* 学术深红 (Dark Red) */
             --border-color: #D5D8DC;
-            --font-title: 'Times New Roman', 'Noto Serif SC', serif;
-            --font-body: 'Arial', 'LXGW WenKai GB Screen', sans-serif;
+            --font-title: 'Times New Roman', 'Noto Serif SC', 'Source Han Serif SC', STSong, 'Songti SC', SimSun, serif;
+            --font-body: 'Arial', 'LXGW WenKai GB Screen', system-ui, -apple-system, 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', 'Source Han Sans SC', 'Noto Sans CJK SC', sans-serif;
             --font-math: 'Cambria Math', 'Times New Roman', serif;
         }
 
@@ -116,7 +116,7 @@
             font-family: var(--font-title);
             font-size: 26px;
             color: var(--accent-primary);
-            font-style: italic;
+            font-style: normal;
         }
 
         /* Tables & Grids */
@@ -147,7 +147,7 @@
         /* 标签 */
         .tag-label {
             display: inline-block; padding: 4px 12px;
-            font-size: 16px; font-weight: bold;
+            font-size: 20px; font-weight: bold;
             background: #E8ECEF; border: 1px solid #CCC;
             color: var(--text-muted); margin-bottom: 16px;
             font-family: var(--font-title);
@@ -209,6 +209,18 @@
         .reveal:nth-child(4) { transition-delay: 0.4s; }
         
         [contenteditable="true"]:focus { outline: 1px dashed var(--accent-primary); background: rgba(10, 54, 99, 0.03); }
+        /* ===== 调研笔记：断行优化 =====
+           标题用 balance 让多行标题各处等长，正文用 pretty 避免末行孤字 */
+        h1, h2, h3, h4, [class*="title"], [class*="Title"], .eyebrow, .section-num {
+            text-wrap: balance;
+        }
+        p, li, .text-body, [class*="text-body"], .prose {
+            text-wrap: pretty;
+        }
+        /* ===== 调研笔记 1.4：中文字重上限 700 =====
+           <b>/<strong> 的 UA 默认 font-weight:bolder 在父级 700 时会解析成 900 */
+        b, strong { font-weight: 700; }
+
     </style>
 </head>
 <body>
@@ -429,19 +441,19 @@
                 <div class="grid-3">
                     <div class="academic-box reveal" style="padding: 24px;">
                         <h3 class="box-title" style="font-size: 24px; border: none; margin-bottom: 10px;" contenteditable="true">
-                            <span style="font-size: 32px; font-weight: 900;">1.</span> 泛源数据抓取
+                            <span style="font-size: 32px; font-weight: 700;">1.</span> 泛源数据抓取
                         </h3>
                         <p class="text-body" style="font-size: 18px;" contenteditable="true">Agent 自动轮询订阅的 RSS 与全网资讯源，利用爬虫工具获取原文，并进行初步的数据清洗与去重。</p>
                     </div>
                     <div class="academic-box reveal" style="padding: 24px;">
                         <h3 class="box-title" style="font-size: 24px; border: none; margin-bottom: 10px;" contenteditable="true">
-                            <span style="font-size: 32px; font-weight: 900;">2.</span> 自主思考与生成
+                            <span style="font-size: 32px; font-weight: 700;">2.</span> 自主思考与生成
                         </h3>
                         <p class="text-body" style="font-size: 18px;" contenteditable="true">AI 独立评估资讯的知识密度与传播价值，依据预设的品牌语调规范，撰写具备深度的分析文章。</p>
                     </div>
                     <div class="academic-box reveal" style="padding: 24px;">
                         <h3 class="box-title" style="font-size: 24px; border: none; margin-bottom: 10px;" contenteditable="true">
-                            <span style="font-size: 32px; font-weight: 900;">3.</span> 分发与执行
+                            <span style="font-size: 32px; font-weight: 700;">3.</span> 分发与执行
                         </h3>
                         <p class="text-body" style="font-size: 18px;" contenteditable="true">调用外部 CMS 接口，将排版完毕的 Markdown 内容自动分发至指定博客或社交平台，实现全程 Zero-touch。</p>
                     </div>

@@ -19,12 +19,12 @@
             --term-border: #1B4524; /* 极客暗绿色 */
             --text-main: #203B26; /* 深绿黑文本 */
             --text-muted: #56785D; /* 浅绿灰注释文本 */
-            --accent-green: #298F3D; /* 亮绿色点缀 */
+            --accent-green: #258238; /* 亮绿色点缀（已压暗至 WCAG AA）*/
             --accent-blue: #0969DA; /* 代码高亮蓝 */
             --accent-red: #CF222E; /* 代码高亮红 */
             --highlight-bg: rgba(41, 143, 61, 0.08);
-            --font-mono: 'Fira Code', Consolas, monospace;
-            --font-body: 'Noto Sans SC', sans-serif;
+            --font-mono: 'Fira Code', Consolas, 'Sarasa Mono SC', system-ui, 'PingFang SC', 'Microsoft YaHei', monospace;
+            --font-body: 'Noto Sans SC', system-ui, -apple-system, 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', 'Source Han Sans SC', 'Noto Sans CJK SC', sans-serif;
             --font-math: 'Cambria Math', 'Times New Roman', serif;
         }
 
@@ -103,20 +103,20 @@
             border-bottom: 2px dashed rgba(27, 69, 36, 0.2);
             padding-bottom: 16px;
         }
-        .slide-title::before { content: '> '; color: var(--accent-green); font-weight: 900; }
+        .slide-title::before { content: '> '; color: var(--accent-green); font-weight: 700; }
 
         .slide-content { flex: 1; display: flex; flex-direction: column; position: relative; z-index: 10; }
 
         /* 文字排版与代码风 */
         .text-body { font-size: 22px; line-height: 1.8; font-weight: 500; }
         .text-body p { margin-bottom: 20px; }
-        .text-body b, .text-body strong { color: var(--term-border); font-weight: 900; }
+        .text-body b, .text-body strong { color: var(--term-border); font-weight: 700; }
         
         .text-body ul { margin-left: 0; padding-left: 0; list-style: none; }
         .text-body li { margin-bottom: 16px; padding-left: 36px; position: relative; }
         .text-body li::before { 
             content: '>>'; position: absolute; left: 0; top: 0;
-            color: var(--accent-green); font-family: var(--font-mono); font-weight: 900; 
+            color: var(--accent-green); font-family: var(--font-mono); font-weight: 700; 
         }
 
         /* 行内代码标签 */
@@ -157,7 +157,7 @@
             display: flex; flex-direction: column;
         }
         .geek-card:hover { transform: translate(-4px, -4px); box-shadow: 8px 8px 0px rgba(27, 69, 36, 0.15); }
-        .card-header { font-family: var(--font-mono); font-size: 16px; color: var(--text-muted); border-bottom: 1px solid var(--term-border); padding-bottom: 8px; margin-bottom: 20px; display: flex; justify-content: space-between; }
+        .card-header { font-family: var(--font-mono); font-size: 20px; color: var(--text-muted); border-bottom: 1px solid var(--term-border); padding-bottom: 8px; margin-bottom: 20px; display: flex; justify-content: space-between; }
         
         .box-title { font-size: 28px; font-weight: 700; color: var(--term-border); margin-bottom: 16px; }
 
@@ -195,6 +195,18 @@
         .reveal:nth-child(4) { transition-delay: 0.4s; }
         
         [contenteditable="true"]:focus { outline: 2px dashed var(--accent-green); background: var(--highlight-bg); }
+        /* ===== 调研笔记：断行优化 =====
+           标题用 balance 让多行标题各处等长，正文用 pretty 避免末行孤字 */
+        h1, h2, h3, h4, [class*="title"], [class*="Title"], .eyebrow, .section-num {
+            text-wrap: balance;
+        }
+        p, li, .text-body, [class*="text-body"], .prose {
+            text-wrap: pretty;
+        }
+        /* ===== 调研笔记 1.4：中文字重上限 700 =====
+           <b>/<strong> 的 UA 默认 font-weight:bolder 在父级 700 时会解析成 900 */
+        b, strong { font-weight: 700; }
+
     </style>
 </head>
 <body>

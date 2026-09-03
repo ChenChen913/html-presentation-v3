@@ -16,8 +16,8 @@
 
         :root {
             --bg-light: #F2F2F7;
-            --accent-blue: #007AFF;
-            --accent-purple: #AF52DE;
+            --accent-blue: #0069DD;
+            --accent-purple: #A640DA;
             --accent-pink: #FF2D55;
             --accent-cyan: #32ADE6;
             --accent-yellow: #FFCC00;
@@ -25,8 +25,8 @@
             --glass-border: rgba(255, 255, 255, 0.9);
             --text-main: #1D1D1F;
             --text-muted: #55555E;
-            --font-title: 'MiSans', 'Noto Sans SC', sans-serif;
-            --font-body: 'Noto Sans SC', sans-serif;
+            --font-title: 'MiSans', 'Noto Sans SC', system-ui, -apple-system, 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', 'Source Han Sans SC', 'Noto Sans CJK SC', sans-serif;
+            --font-body: 'Noto Sans SC', system-ui, -apple-system, 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', 'Source Han Sans SC', 'Noto Sans CJK SC', sans-serif;
         }
 
         body { font-family: var(--font-body); color: var(--text-main); }
@@ -174,7 +174,7 @@
 
         .tag-label {
             display: inline-block; padding: 6px 16px; border-radius: 50px;
-            font-size: 14px; font-weight: 700; letter-spacing: 1px;
+            font-size: 20px; font-weight: 700; letter-spacing: 1px;
             background: rgba(0, 0, 0, 0.05); border: 1px solid rgba(0, 0, 0, 0.1);
             color: var(--text-main); margin-bottom: 16px;
         }
@@ -182,7 +182,7 @@
         .tag-purple { background: rgba(175, 82, 222, 0.15); color: var(--accent-purple); border-color: rgba(175, 82, 222, 0.3); }
 
         .card-num { 
-            font-family: var(--font-title); font-size: 56px; font-weight: 900;
+            font-family: var(--font-title); font-size: 56px; font-weight: 700;
             color: transparent; -webkit-text-stroke: 1.5px rgba(0,0,0,0.15);
             margin-bottom: 16px; line-height: 1; transition: all 0.3s;
         }
@@ -211,6 +211,18 @@
         .reveal:nth-child(4), .reveal-scale:nth-child(4) { transition-delay: 0.4s; }
         
         [contenteditable="true"]:focus { outline: none; background: rgba(0,0,0,0.03); border-radius: 8px; box-shadow: 0 0 0 2px rgba(0,122,255,0.3); }
+        /* ===== 调研笔记：断行优化 =====
+           标题用 balance 让多行标题各处等长，正文用 pretty 避免末行孤字 */
+        h1, h2, h3, h4, [class*="title"], [class*="Title"], .eyebrow, .section-num {
+            text-wrap: balance;
+        }
+        p, li, .text-body, [class*="text-body"], .prose {
+            text-wrap: pretty;
+        }
+        /* ===== 调研笔记 1.4：中文字重上限 700 =====
+           <b>/<strong> 的 UA 默认 font-weight:bolder 在父级 700 时会解析成 900 */
+        b, strong { font-weight: 700; }
+
     </style>
 </head>
 <body>
@@ -414,17 +426,17 @@
                     <div class="glass-card reveal-scale text-center" style="padding: 40px 24px;">
                         <div class="card-num">1</div>
                         <h3 class="card-title title-font" style="font-size: 24px;" contenteditable="true">RSS 抓取</h3>
-                        <p class="text-body" style="font-size: 16px; line-height: 1.5;" contenteditable="true">Agent 自动订阅并抓取全网最新资讯源，进行初步数据清洗。</p>
+                        <p class="text-body" style="font-size: 20px; line-height: 1.6;" contenteditable="true">Agent 自动订阅并抓取全网最新资讯源，进行初步数据清洗。</p>
                     </div>
                     <div class="glass-card reveal-scale text-center" style="padding: 40px 24px;">
                         <div class="card-num">2</div>
                         <h3 class="card-title title-font" style="font-size: 24px;" contenteditable="true">自主思考生成</h3>
-                        <p class="text-body" style="font-size: 16px; line-height: 1.5;" contenteditable="true">AI 自主评估信息价值，根据设定好的风格生成高质量文章。</p>
+                        <p class="text-body" style="font-size: 20px; line-height: 1.6;" contenteditable="true">AI 自主评估信息价值，根据设定好的风格生成高质量文章。</p>
                     </div>
                     <div class="glass-card reveal-scale text-center" style="padding: 40px 24px;">
                         <div class="card-num">3</div>
                         <h3 class="card-title title-font" style="font-size: 24px;" contenteditable="true">自动发布</h3>
-                        <p class="text-body" style="font-size: 16px; line-height: 1.5;" contenteditable="true">通过接口，将排版好的内容自动分发到指定平台，全程无人干预。</p>
+                        <p class="text-body" style="font-size: 20px; line-height: 1.6;" contenteditable="true">通过接口，将排版好的内容自动分发到指定平台，全程无人干预。</p>
                     </div>
                 </div>
             </div>
@@ -504,7 +516,7 @@
             <div class="glass-panel reveal text-center" style="padding: 80px 100px; max-width: 1000px; width: 100%;">
                 <h1 class="title-font" style="font-size: 64px; margin-bottom: 24px; color: var(--text-main);" contenteditable="true">不要只停留在对话框里</h1>
                 <p class="text-body" style="font-size: 28px;" contenteditable="true">去构建工作流，去释放智能体。</p>
-                <div style="margin-top: 48px; display: inline-block; background: rgba(0, 122, 255, 0.08); border: 1px solid var(--accent-blue); color: var(--accent-blue); padding: 16px 40px; border-radius: 50px; font-family: var(--font-title); font-size: 24px; letter-spacing: 2px; box-shadow: 0 10px 20px rgba(0, 122, 255, 0.1);" contenteditable="true">
+                <div style="margin-top: 48px; display: inline-block; background: rgba(0, 122, 255, 0.08); border: 1px solid var(--accent-blue); color: var(--accent-blue); padding: 16px 40px; border-radius: 50px; font-family: var(--font-title); font-size: 24px; letter-spacing: 0; box-shadow: 0 10px 20px rgba(0, 122, 255, 0.1);" contenteditable="true">
                     你的下一个 AI 阶段是什么？
                 </div>
             </div>
