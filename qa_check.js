@@ -111,7 +111,11 @@ async function checkOne(page, file, opts) {
     html { scroll-snap-type: none !important; scroll-behavior: auto !important; }
     .slide-inner { transform: none !important; }
     .nav-dots, .keyboard-hint, .progress-bar, .hint { display: none !important; }
-    * { animation-delay: 0s !important; animation-duration: .001s !important; transition-duration: .001s !important; }
+    * { animation-delay: 0s !important; animation-duration: .001s !important; transition-duration: .001s !important;
+        animation-iteration-count: 1 !important; animation-fill-mode: forwards !important; }
+    /* 伪元素一律不带动效：它们几乎都是装饰（扫光 / 流光 / 噪点）。这类动画若靠位移实现，
+       会让父容器的 scrollWidth 随相位漂移，同一份 deck 会测出不同结果。 */
+    *::before, *::after { animation: none !important; }
   `});
   let res = [];
   if (mode === 'scroll') {

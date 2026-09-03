@@ -115,13 +115,20 @@
             z-index: 10;
         }
         
-        /* Subtle shine sweep effect on panels */
+        /* Subtle shine sweep effect on panels
+           不要用「移动元素」实现扫光（left: -100% -> 200%）：面板是 overflow:hidden，
+           元素跑到右侧时会把 scrollWidth 撑到 2 倍以上，任何基于 scrollWidth 的溢出
+           检测都会随动画相位漂移。改为元素贴合面板（inset:0），只让渐变在背景里移动，
+           视觉一致但布局零溢出。 */
         .glass-panel::before {
-            content: ''; position: absolute; top: 0; left: -100%; width: 50%; height: 100%;
-            background: linear-gradient(to right, transparent, rgba(255,255,255,0.8), transparent);
-            transform: skewX(-20deg); animation: shine 8s infinite; pointer-events: none;
+            content: ''; position: absolute; inset: 0; pointer-events: none;
+            background-image: linear-gradient(100deg, transparent 38%, rgba(255,255,255,0.8) 50%, transparent 62%);
+            background-repeat: no-repeat;
+            background-size: 50% 100%;
+            background-position-x: -200%;
+            animation: shine 8s infinite;
         }
-        @keyframes shine { 0%, 60% { left: -100%; } 100% { left: 200%; } }
+        @keyframes shine { 0%, 60% { background-position-x: -200%; } 100% { background-position-x: 300%; } }
 
         .glass-card {
             background: rgba(255, 255, 255, 0.5);
