@@ -174,7 +174,10 @@ const AUDIT = () => {
   const args = process.argv.slice(2);
   const onlyJson = args.includes('--json');
   const dirArg = args.indexOf('--dir');
-  const files = args.filter(a => !a.startsWith('--') && !/^\d+$/.test(a));
+  // 注意：--dir 后面那个值是目录名，不是文件名，必须从「文件列表」里排除掉，
+  // 否则会把目录本身当成一个 html 去扫，结果永远是 0 条。
+  const files = args.filter((a, i) =>
+    !a.startsWith('--') && !/^\d+$/.test(a) && !(dirArg >= 0 && i === dirArg + 1));
 
   let targets = [];
   if (files.length) {
