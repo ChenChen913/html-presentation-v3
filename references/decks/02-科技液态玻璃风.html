@@ -197,8 +197,8 @@
         .card-title { font-size: 32px; color: var(--text-main); margin-bottom: 16px; font-weight: 700; }
 
         /* 布局组件 */
-        .layout-split { display: flex; gap: 60px; align-items: center; height: 100%; }
-        .layout-split > * { flex: 1; }
+        .layout-split { display: grid; grid-template-columns: 1fr 1fr; gap: 60px; align-items: center; height: 100%; }
+        .layout-split > * { min-width: 0; }
         .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 40px; }
         .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 32px; }
         .text-center { text-align: center; margin: 0 auto; display: flex; flex-direction: column; align-items: center; }
@@ -280,21 +280,21 @@
                 <div class="grid-3">
                     <div class="glass-card reveal-scale">
                         <div class="card-num">01</div>
-                        <h3 class="card-title title-font" contenteditable="true">提示词时代<br><span style="font-size: 20px; color: var(--accent-blue); font-weight: 500;">(Prompt)</span></h3>
+                        <h3 class="card-title title-font" contenteditable="true">提示词时代 <span style="font-size: 20px; color: var(--accent-blue); font-weight: 500;">(Prompt)</span></h3>
                         <div class="text-body" contenteditable="true">
                             一问一答，尝试寻找神级指令。探索 AI 的边界与局限。
                         </div>
                     </div>
                     <div class="glass-card reveal-scale">
                         <div class="card-num">02</div>
-                        <h3 class="card-title title-font" contenteditable="true">技能时代<br><span style="font-size: 20px; color: var(--accent-blue); font-weight: 500;">(Skill)</span></h3>
+                        <h3 class="card-title title-font" contenteditable="true">技能时代 <span style="font-size: 20px; color: var(--accent-blue); font-weight: 500;">(Skill)</span></h3>
                         <div class="text-body" contenteditable="true">
                             构建工作流。结合上下文，把 AI 封装成解决特定问题的工具。
                         </div>
                     </div>
                     <div class="glass-card reveal-scale">
                         <div class="card-num">03</div>
-                        <h3 class="card-title title-font" contenteditable="true">养龙虾时代<br><span style="font-size: 20px; color: var(--accent-blue); font-weight: 500;">(Agents)</span></h3>
+                        <h3 class="card-title title-font" contenteditable="true">养龙虾时代 <span style="font-size: 20px; color: var(--accent-blue); font-weight: 500;">(Agents)</span></h3>
                         <div class="text-body" contenteditable="true">
                             自主智能体。给定目标与环境，让 AI 自主规划、执行与反思。
                         </div>
@@ -391,7 +391,11 @@
         <div class="slide-inner">
             <div class="slide-content layout-split">
                 <div class="reveal">
-                    <h2 class="section-title title-font" style="line-height: 1.2; margin-bottom: 24px; background: linear-gradient(to right, #FF9500, #FF2D55); -webkit-background-clip: text; -webkit-text-fill-color: transparent;" contenteditable="true">Workflow<br>的局限性</h2>
+                    <!-- 这一页此前因为 .layout-split 的横排意图被 .slide-content 的 column 吃掉，
+                         标题块被推到 x≈500 居中，而本 deck 其余各页标题一律左对齐在 x=56，
+                         对比之下就像「错位」。分栏恢复横排后标题回到 x=56，与全篇一致。
+                         同时去掉硬编码 <br>：左列 554px 装得下单行（实测约 475px）。 -->
+                    <h2 class="section-title title-font" style="line-height: 1.25; margin: 0; text-align: left; background: linear-gradient(to right, #FF9500, #FF2D55); -webkit-background-clip: text; -webkit-text-fill-color: transparent;" contenteditable="true">Workflow 的局限性</h2>
                 </div>
                 <div class="glass-panel reveal" style="padding: 36px 48px;">
                     <div class="text-body" contenteditable="true">

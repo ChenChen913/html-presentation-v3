@@ -120,8 +120,8 @@
         }
 
         /* Tables & Grids */
-        .layout-split { display: flex; gap: 60px; align-items: flex-start; height: 100%; }
-        .layout-split > * { flex: 1; }
+        .layout-split { display: grid; grid-template-columns: 1fr 1fr; gap: 60px; align-items: flex-start; height: 100%; }
+        .layout-split > * { min-width: 0; }
         .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 40px; }
         .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 32px; }
 

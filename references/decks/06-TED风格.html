@@ -116,8 +116,8 @@
         }
 
         /* 布局 */
-        .layout-split { display: flex; gap: 80px; align-items: center; height: 100%; }
-        .layout-split > * { flex: 1; }
+        .layout-split { display: grid; grid-template-columns: 1fr 1fr; gap: 80px; align-items: center; height: 100%; }
+        .layout-split > * { min-width: 0; }
         .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 60px; }
         .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 40px; }
 
@@ -240,12 +240,17 @@
     <!-- Slide 4: 阶段一 -->
     <section class="slide bg-dark">
         <div class="slide-inner">
-            <div class="slide-content layout-split">
+            <!-- 原来挂着 layout-split，但分栏被 .slide-content 的 column 吃成了竖排：
+                 标题被挤到水平居中，正文吊在下面，中间空出一大块，两边也各留一大条空白。
+                 TED 式页面本就是「一句大字 + 下方要点」，索性改成上下结构：
+                 标题全宽单行、左对齐（与 P3/P7/P10 的 .slide-title 同一条起始线 x=80），
+                 正文紧随其后，间距从 100px 收到 28px。 -->
+            <div class="slide-content">
                 <div class="reveal">
-                    <div style="font-size: 24px; color: var(--ted-red); font-weight: 700; margin-bottom: 16px;">PHASE 01</div>
-                    <h2 class="huge-title" style="font-size: 64px;" contenteditable="true">试图用一句话解决<br>所有问题。</h2>
+                    <div style="font-size: 24px; color: var(--ted-red); font-weight: 700; margin-bottom: 12px;">PHASE 01</div>
+                    <h2 class="huge-title" style="font-size: 64px; margin: 0 0 28px; text-align: left;" contenteditable="true">试图用一句话解决所有问题。</h2>
                 </div>
-                <div class="reveal text-body" style="padding-top: 40px;">
+                <div class="reveal text-body">
                     <ul contenteditable="true">
                         <li><b>交互模式：</b> 直接向大模型索要最终结果。</li>
                         <li><b>典型场景：</b> “帮我写一篇1000字的爆款文章”。</li>
@@ -278,12 +283,14 @@
     <!-- Slide 6: 阶段二 -->
     <section class="slide">
         <div class="slide-inner">
-            <div class="slide-content layout-split">
+            <div class="slide-content">
                 <div class="reveal">
-                    <div style="font-size: 24px; color: var(--ted-red); font-weight: 700; margin-bottom: 16px;">PHASE 02</div>
-                    <h2 class="huge-title" style="font-size: 64px;" contenteditable="true">引入工作流<br>(Workflow)</h2>
+                    <div style="font-size: 24px; color: var(--ted-red); font-weight: 700; margin-bottom: 12px;">PHASE 02</div>
+                    <!-- 括号里的英文与前面同属一个语义单元，硬换行会把它劈成两截。
+                         全宽 1168px 下单行只需约 576px，中英之间补一个空格即可。 -->
+                    <h2 class="huge-title" style="font-size: 64px; margin: 0 0 28px; text-align: left;" contenteditable="true">引入工作流 (Workflow)</h2>
                 </div>
-                <div class="reveal text-body" style="padding-top: 40px;">
+                <div class="reveal text-body">
                     <ul contenteditable="true">
                         <li><b>核心转变：</b> 从“对话框许愿” 走向 “工程化拆解”。</li>
                         <li><b>运作机制：</b> 将任务拆分成节点，固化为可复用的“技能”。</li>
@@ -340,17 +347,20 @@
     <!-- Slide 9: 阶段三 -->
     <section class="slide bg-white">
         <div class="slide-inner">
-            <div class="slide-content layout-split">
-                <div class="reveal text-body" style="padding-top: 40px;">
+            <!-- 这一页原本把标题放在正文「后面」（DOM 顺序：先 ul 再标题），
+                 与 P4/P6 的「先标题后正文」相反，读起来标题像掉了队。
+                 这里统一成与 P4/P6 相同的顺序：标题在上，正文在下。 -->
+            <div class="slide-content">
+                <div class="reveal">
+                    <div style="font-size: 24px; color: var(--ted-red); font-weight: 700; margin-bottom: 12px;">PHASE 03</div>
+                    <h2 class="huge-title" style="font-size: 64px; color: var(--ted-black); margin: 0 0 28px; text-align: left;" contenteditable="true">释放自主智能体 (Agents)</h2>
+                </div>
+                <div class="reveal text-body">
                     <ul contenteditable="true">
                         <li><b>范式隐喻：</b> 放弃手把手教，建立自我循环的生态（养龙虾）。</li>
                         <li><b>人类身份：</b> 养殖者。提供计算环境，下发工具库权限。</li>
                         <li><b>AI 身份：</b> 独立数字员工。给定目标后自主规划、调用、反思重试。</li>
                     </ul>
-                </div>
-                <div class="reveal">
-                    <div style="font-size: 24px; color: var(--ted-red); font-weight: 700; margin-bottom: 16px;">PHASE 03</div>
-                    <h2 class="huge-title" style="font-size: 64px; color: var(--ted-black);" contenteditable="true">释放自主智能体<br>(Agents)</h2>
                 </div>
             </div>
         </div>

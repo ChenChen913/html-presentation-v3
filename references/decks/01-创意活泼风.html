@@ -113,7 +113,10 @@
             display: inline-block; font-family: var(--font-body); font-weight: bold;
         }
         
-        .section-title { font-size: 56px; margin-bottom: 32px; display: inline-block; background: var(--neo-yellow); padding: 10px 24px; border: 5px solid #000; box-shadow: 8px 8px 0 #000; }
+        /* 标题→正文的距离统一由这里控制：56px 标题配 24px ≈ 0.43em，
+           落在「0.4~0.6 倍标题字号」的区间。原来是 32px，再叠上正文块自身的内边距，
+           首行文字离标题有 118px，明显偏松。 */
+        .section-title { font-size: 56px; margin-bottom: 24px; display: inline-block; background: var(--neo-yellow); padding: 10px 24px; border: 5px solid #000; box-shadow: 8px 8px 0 #000; }
         
         .text-body { font-size: 24px; line-height: 1.6; font-weight: bold; color: #111; }
         .text-body p { margin-bottom: 20px; }
@@ -127,8 +130,8 @@
         }
 
         /* 布局组件 */
-        .layout-split { display: flex; gap: 40px; align-items: center; height: 100%; }
-        .layout-split > * { flex: 1; }
+        .layout-split { display: grid; grid-template-columns: 1fr 1fr; gap: 40px; align-items: center; height: 100%; }
+        .layout-split > * { min-width: 0; }
         
         .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 40px; }
         .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 32px; }
@@ -187,7 +190,10 @@
         <div class="slide-inner">
             <div class="slide-content layout-split">
                 <div class="reveal">
-                    <h2 class="section-title" contenteditable="true">一个有趣的<br>招聘标准</h2>
+                    <!-- 标题行数：短标题（≤12 汉字当量）必须单行，禁止用 <br> 手撕。
+                         分栏左列可用约 564px：9 个字 × 56px + 字间距 + 标题条内边距 ≈ 580px 会折行，
+                         降到 48px（页面标题区间 40~48）后为 508px，单行且留余量。 -->
+                    <h2 class="section-title" style="font-size: 48px; margin: 0;" contenteditable="true">一个有趣的招聘标准</h2>
                     <div class="bg-shape" style="width: 200px; height: 200px; background: var(--neo-cyan); border-radius: 50%; bottom: 20px; left: 20px; z-index: -1;"></div>
                 </div>
                 <div class="neo-box reveal" style="padding: 50px;">
@@ -212,21 +218,21 @@
                 <div class="grid-3">
                     <div class="card reveal-scale">
                         <div class="card-num">01</div>
-                        <h3 class="card-title title-font" contenteditable="true">提示词时代<br>(Prompt)</h3>
+                        <h3 class="card-title title-font" contenteditable="true">提示词时代 (Prompt)</h3>
                         <div class="text-body" contenteditable="true">
                             一问一答，尝试寻找神级指令。探索 AI 的边界与局限。
                         </div>
                     </div>
                     <div class="card reveal-scale">
                         <div class="card-num">02</div>
-                        <h3 class="card-title title-font" contenteditable="true">技能时代<br>(Skill)</h3>
+                        <h3 class="card-title title-font" contenteditable="true">技能时代 (Skill)</h3>
                         <div class="text-body" contenteditable="true">
                             构建工作流。结合上下文，把 AI 封装成解决特定问题的工具。
                         </div>
                     </div>
                     <div class="card reveal-scale">
                         <div class="card-num">03</div>
-                        <h3 class="card-title title-font" contenteditable="true">养龙虾时代<br>(Agents)</h3>
+                        <h3 class="card-title title-font" contenteditable="true">养龙虾时代 (Agents)</h3>
                         <div class="text-body" contenteditable="true">
                             自主智能体。给定目标与环境，让 AI 自主规划、执行与反思。
                         </div>
@@ -260,8 +266,13 @@
         <div class="slide-inner">
             <h2 class="section-title reveal" contenteditable="true" style="background: var(--neo-pink); color: #FFF;">核心痛点</h2>
             <div class="slide-content">
-                <div class="neo-box text-body reveal" style="max-width: 900px; margin: 0 auto; padding: 40px; border-color: var(--neo-pink); box-shadow: 12px 12px 0 var(--neo-pink);">
-                    <h3 class="title-font" style="font-size: 40px; margin-bottom: 24px; color: var(--neo-pink);" contenteditable="true">Prompt 并不是万能的</h3>
+                <!-- 去掉 margin: 0 auto：标题条是通栏的（左边缘 x=56），正文框却居中，
+                     横向错开 88px，看着就像标题和内容没关系。改成与标题左对齐。 -->
+                <div class="neo-box text-body reveal" style="max-width: 900px; padding: 32px; border-color: var(--neo-pink); box-shadow: 12px 12px 0 var(--neo-pink);">
+                    <!-- 标题→正文：距离由「标题 margin-bottom + 正文块 padding」两段叠加，
+                         之前 h3 还带着 UA 默认 margin-top 40px，实际首行文字距标题 118px。
+                         清零 h3 上边距后降到 78px；正文块内边距同步收到 32px，总计 56px。 -->
+                    <h3 class="title-font" style="font-size: 40px; margin: 0 0 24px; color: var(--neo-pink);" contenteditable="true">Prompt 并不是万能的</h3>
                     <div class="text-body" contenteditable="true">
                         <p>为什么大模型写不出你心里的那篇文章？因为 <b>缺少上下文 (Context)</b>。</p>
                         <p style="margin-top: 20px;">单靠指令是不够的。AI 不知道你的业务背景，不知道你的受众，也不知道你之前试错的过程。</p>
@@ -325,7 +336,9 @@
         <div class="slide-inner">
             <div class="slide-content layout-split">
                 <div class="reveal">
-                    <h2 class="title-font" style="font-size: 56px; line-height: 1.2; margin-bottom: 24px;" contenteditable="true">Workflow<br>的局限性</h2>
+                    <!-- 中英混排加空格；字号维持 56px：latin 取 0.5em、汉字取 1em 估算约 470px，
+                         加字间距约 496px < 左列可用 564px，单行成立。 -->
+                    <h2 class="title-font" style="font-size: 56px; line-height: 1.25; margin: 0;" contenteditable="true">Workflow 的局限性</h2>
                 </div>
                 <div class="neo-box reveal" style="padding: 40px; border-color: var(--neo-cyan); box-shadow: 12px 12px 0 var(--neo-cyan);">
                     <div class="text-body" contenteditable="true">
@@ -414,12 +427,13 @@
         <div class="slide-inner">
             <div class="slide-content layout-split">
                 <div class="reveal">
-                    <h2 class="title-font" style="font-size: 64px; line-height: 1.2; margin-bottom: 24px;" contenteditable="true">代价与<br>真正的价值</h2>
-                    <div class="neo-box neo-box-yellow" style="padding: 30px;">
-                        <div class="text-body" style="font-size: 20px;" contenteditable="true">
-                            在这个阶段，你会发现：<br><b>Token 的消耗量开始疯狂飙升。</b>
-                        </div>
-                    </div>
+                    <h2 class="title-font" style="font-size: 60px; line-height: 1.2; margin: 0;" contenteditable="true">代价与真正的价值</h2>
+                    <!-- 原来这里是一个带 5px 粗描边和硬阴影的小黄框，套在同页右侧大黑框旁边，
+                         形成「框里套框」的观感。改用无边框的行内高亮：只给关键短语铺黄底，
+                         保留强调，去掉一整层外框。 -->
+                    <p class="text-body" style="font-size: 24px; line-height: 1.6; margin-top: 24px;" contenteditable="true">
+                        在这个阶段，你会发现：<b style="background: var(--neo-yellow); padding: 2px 8px;">Token 的消耗量开始疯狂飙升。</b>
+                    </p>
                 </div>
                 <div class="neo-box reveal" style="padding: 40px; background: #000; color: #fff; border-color: var(--neo-red); box-shadow: 12px 12px 0 var(--neo-red);">
                     <div class="text-body" contenteditable="true" style="color: #fff;">

@@ -97,6 +97,12 @@
 
         .text-body ul, .text-body ol { margin-left: 40px; margin-bottom: 18px; padding-left: 0; }
         .text-body li { margin-bottom: 10px; position: relative; list-style-type: disc; }
+        /* 「大标题 + 论点列表」页（P4 / P6 / P9）专用的松排版。
+           这几页文字少、留白多，行距不放开就会上重下轻：
+           行高 1.6 → 2（正文 24px 时行距约 1 倍字号，落在调研结论的 1~1.5 区间），
+           条目间距 10px → 20px，让「条与条」靠间距区分，而不是靠行距硬撑。 */
+        .list-loose > li { margin-bottom: 20px; }
+        .list-loose > li:last-child { margin-bottom: 0; }
 
         /* 引言区块 (Citation / Blockquote) */
         .academic-quote {
@@ -124,8 +130,8 @@
         }
 
         /* 布局网格 */
-        .layout-split { display: flex; gap: 60px; align-items: flex-start; height: 100%; }
-        .layout-split > * { flex: 1; }
+        .layout-split { display: grid; grid-template-columns: 1fr 1fr; gap: 60px; align-items: flex-start; height: 100%; }
+        .layout-split > * { min-width: 0; }
         .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 50px; }
         .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 40px; }
 
@@ -258,12 +264,16 @@
                 <h2 class="slide-title" contenteditable="true">3. 第一阶段：提示词工程的局限性探索</h2>
                 <div class="header-meta">Phase I: Prompt Engineering</div>
             </header>
-            <div class="slide-content layout-split">
+            <!-- 竖排分栏 + UA 标题默认外边距 = 标题与正文之间那块大空白。
+                 改成上下结构：标题全宽单行，间距显式收到 24px，正文行距放到 2。
+                 justify-content: center 是这套模板的全局约定（其它页都有），
+                 少了它内容会顶部对齐，底部凭空多出约 190px 空白。 -->
+            <div class="slide-content" style="justify-content: center;">
                 <div class="reveal">
-                    <h3 style="font-size: 48px; line-height: 1.3; color: var(--accent-blue);" contenteditable="true">试图用一句话解决<br>所有复杂问题。</h3>
+                    <h3 style="font-size: 48px; line-height: 1.25; margin: 0 0 24px; color: var(--accent-blue);" contenteditable="true">试图用一句话解决所有复杂问题。</h3>
                 </div>
-                <div class="reveal text-body" style="padding-top: 20px;">
-                    <ul contenteditable="true">
+                <div class="reveal text-body" style="line-height: 2;">
+                    <ul class="list-loose" contenteditable="true" style="margin-top: 0;">
                         <li><b>交互协议：</b> 单轮或多轮的同步请求-响应 (Req/Res)。</li>
                         <li><b>典型应用：</b> “撰写一篇1000字的综述文章”。</li>
                         <li><b>实验体感：</b> 投入大量精力进行语义对齐，但输出结果往往表现出严重的“泛化平庸”。</li>
@@ -306,12 +316,16 @@
                 <h2 class="slide-title" contenteditable="true">4. 第二阶段：工作流的工程化引入</h2>
                 <div class="header-meta">Phase II: Workflow Orchestration</div>
             </header>
-            <div class="slide-content layout-split">
+            <!-- 竖排分栏 + UA 标题默认外边距 = 标题与正文之间那块大空白。
+                 改成上下结构：标题全宽单行，间距显式收到 24px，正文行距放到 2。
+                 justify-content: center 是这套模板的全局约定（其它页都有），
+                 少了它内容会顶部对齐，底部凭空多出约 190px 空白。 -->
+            <div class="slide-content" style="justify-content: center;">
                 <div class="reveal">
-                    <h3 style="font-size: 48px; line-height: 1.3; color: var(--accent-blue);" contenteditable="true">引入确定性工作流<br>(Workflow)</h3>
+                    <h3 style="font-size: 48px; line-height: 1.25; margin: 0 0 24px; color: var(--accent-blue);" contenteditable="true">引入确定性工作流 (Workflow)</h3>
                 </div>
-                <div class="reveal text-body" style="padding-top: 20px;">
-                    <ul contenteditable="true">
+                <div class="reveal text-body" style="line-height: 2;">
+                    <ul class="list-loose" contenteditable="true" style="margin-top: 0;">
                         <li><b>范式转移：</b> 从“祈使句编程”转向“工程化节点拆解”。</li>
                         <li><b>运作机制：</b> 复杂任务 → 拆解为单一功能的确定性子节点 → 封装为 API (Skill)。</li>
                         <li><b>技术栈：</b> 依托流式编排引擎 (如 Coze, Dify 等)。</li>
@@ -381,12 +395,16 @@
                 <h2 class="slide-title" contenteditable="true">5. 第三阶段：智能体时代的降临</h2>
                 <div class="header-meta">Phase III: Autonomous Agents</div>
             </header>
-            <div class="slide-content layout-split">
+            <!-- 竖排分栏 + UA 标题默认外边距 = 标题与正文之间那块大空白。
+                 改成上下结构：标题全宽单行，间距显式收到 24px，正文行距放到 2。
+                 justify-content: center 是这套模板的全局约定（其它页都有），
+                 少了它内容会顶部对齐，底部凭空多出约 190px 空白。 -->
+            <div class="slide-content" style="justify-content: center;">
                 <div class="reveal">
-                    <h3 style="font-size: 48px; line-height: 1.3; color: var(--accent-blue);" contenteditable="true">释放自主智能体<br>(Agents)</h3>
+                    <h3 style="font-size: 48px; line-height: 1.25; margin: 0 0 24px; color: var(--accent-blue);" contenteditable="true">释放自主智能体 (Agents)</h3>
                 </div>
-                <div class="reveal text-body" style="padding-top: 20px;">
-                    <ul contenteditable="true">
+                <div class="reveal text-body" style="line-height: 2;">
+                    <ul class="list-loose" contenteditable="true" style="margin-top: 0;">
                         <li><b>范式隐喻 (“养龙虾”)：</b> 放弃微观指令控制，转向宏观生态建设与规则设定。</li>
                         <li><b>人类角色的退维：</b> 从“驾驶员”退居为“环境提供者”，负责分配算力资源与系统接口权限。</li>
                         <li><b>AI 实体的主体性确立：</b> 在给定宏大目标后，自主利用 ReAct 框架完成任务解构、行为执行 (Action) 与效果观测 (Observation)。</li>
