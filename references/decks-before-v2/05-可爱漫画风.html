@@ -1,0 +1,760 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>自揭老底：我到底用AI做了哪些事儿</title>
+    <!-- 漫画风字体：站酷快乐体 (标题) & 悠哉字体 (手写正文) -->
+    <link href="https://fonts.googleapis.com/css2?family=ZCOOL+KuaiLe&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/cn-fontsource-yozai-regular/font.css">
+    <style>
+        /* ==========================================
+           1. Viewport Scale & Core Reset
+        ========================================== */
+        html, body { margin: 0; padding: 0; height: 100%; overflow-x: hidden; background: #FFDE00; }
+        html { scroll-snap-type: y mandatory; scroll-behavior: smooth; }
+
+        :root {
+            --comic-black: #1A1A1A;
+            --comic-white: #FFFFFF;
+            --comic-yellow: #FFDE00;
+            --comic-red: #FF3366;
+            --comic-blue: #00E5FF;
+            --comic-green: #00E676;
+            --comic-purple: #D500F9;
+            --comic-blue-ink: #0094A5; /* 亮青压白底仅 1.54:1，文字用这个（3.63:1）*/
+            --font-title: 'ZCOOL KuaiLe', system-ui, -apple-system, 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', 'Source Han Sans SC', 'Noto Sans CJK SC', sans-serif;
+            --font-body: 'Yozai', system-ui, -apple-system, 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', 'Source Han Sans SC', 'Noto Sans CJK SC', sans-serif;
+            --font-math: 'Cambria Math', 'Times New Roman', serif;
+        }
+
+        body { font-family: var(--font-body); color: var(--comic-black); font-weight: bold; }
+
+        /* 半色调网点背景 (Halftone Pattern) */
+        .halftone-bg {
+            position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+            background-color: var(--comic-yellow);
+            background-image: radial-gradient(rgba(26, 26, 26, 0.15) 20%, transparent 20%),
+                              radial-gradient(rgba(26, 26, 26, 0.15) 20%, transparent 20%);
+            background-size: 20px 20px;
+            background-position: 0 0, 10px 10px;
+            z-index: 0; pointer-events: none;
+        }
+
+        .slide {
+            width: 100vw; height: 100vh; height: 100dvh;
+            scroll-snap-align: start;
+            position: relative; display: flex;
+            align-items: center; justify-content: center;
+            z-index: 10;
+        }
+
+        .slide-inner {
+            width: 1280px; height: 720px;
+            box-sizing: border-box;
+            flex-shrink: 0;
+            position: relative;
+            transform-origin: center center;
+            display: flex; flex-direction: column;
+            padding: 48px 56px;
+            z-index: 10;
+        }
+
+        /* Mobile Layout */
+        @media (max-width: 767px) {
+            html { scroll-snap-type: none; }
+            .slide { height: auto; min-height: 100svh; overflow: visible; scroll-snap-align: none; padding: 20px 0; }
+            .slide-inner { width: 100% !important; height: auto !important; transform: none !important; padding: clamp(24px, 5vw, 40px); }
+            .nav-dots { display: none; }
+        }
+
+        /* ==========================================
+           2. Comic Style Components
+        ========================================== */
+        .slide-content { flex: 1; display: flex; flex-direction: column; position: relative; z-index: 10; }
+
+        /* 漫画标题 */
+        .section-title {
+            font-family: var(--font-title);
+            font-size: 50px;
+            color: var(--comic-white);
+            background: var(--comic-red);
+            display: inline-block;
+            padding: 10px 30px;
+            border: 4px solid var(--comic-black);
+            box-shadow: 6px 6px 0px var(--comic-black);
+            transform: rotate(-2deg);
+            margin-bottom: 40px;
+            align-self: flex-start;
+            text-shadow: 2px 2px 0 var(--comic-black);
+        }
+
+        /* 漫画分镜框 (Comic Panel) */
+        .comic-panel {
+            background: var(--comic-white);
+            border: 5px solid var(--comic-black);
+            box-shadow: 12px 12px 0px var(--comic-black);
+            padding: 36px;
+            position: relative;
+            border-radius: 2px;
+            transition: transform 0.2s;
+        }
+        .comic-panel:hover { transform: translate(-4px, -4px); box-shadow: 16px 16px 0px var(--comic-black); }
+        .comic-panel.blue { box-shadow: 12px 12px 0px var(--comic-blue); border-color: var(--comic-black); }
+        .comic-panel.purple { box-shadow: 12px 12px 0px var(--comic-purple); }
+
+        /* 旁白框 (Narration Box) */
+        .narration-box {
+            background: var(--comic-yellow);
+            border: 4px solid var(--comic-black);
+            padding: 12px 24px;
+            font-family: var(--font-title);
+            font-size: 24px;
+            position: absolute;
+            top: -24px; left: -10px;
+            box-shadow: 4px 4px 0px var(--comic-black);
+        }
+
+        /* 对话气泡 (Speech Bubble) */
+        .speech-bubble {
+            background: var(--comic-white);
+            border: 4px solid var(--comic-black);
+            border-radius: 30px;
+            padding: 24px 32px;
+            font-size: 26px;
+            font-family: var(--font-title);
+            position: relative;
+            box-shadow: 6px 6px 0px var(--comic-black);
+            margin: 20px 0;
+            text-align: center;
+        }
+        .speech-bubble::after {
+            content: '';
+            position: absolute;
+            bottom: -20px; left: 50px;
+            border-width: 20px 20px 0;
+            border-style: solid;
+            border-color: var(--comic-white) transparent transparent transparent;
+            z-index: 2;
+        }
+        .speech-bubble::before {
+            content: '';
+            position: absolute;
+            bottom: -26px; left: 47px;
+            border-width: 24px 23px 0;
+            border-style: solid;
+            border-color: var(--comic-black) transparent transparent transparent;
+            z-index: 1;
+        }
+
+        /* 爆炸爆炸框 (Action Burst) */
+        .action-burst {
+            background: var(--comic-red);
+            color: var(--comic-white);
+            font-family: var(--font-title);
+            font-size: 32px;
+            padding: 20px;
+            clip-path: polygon(50% 0%, 61% 35%, 98% 35%, 68% 57%, 79% 91%, 50% 70%, 21% 91%, 32% 57%, 2% 35%, 39% 35%);
+            text-align: center;
+            display: inline-flex; justify-content: center; align-items: center;
+            text-shadow: 2px 2px 0 var(--comic-black);
+        }
+
+        /* 文字排版 */
+        .text-body { font-size: 26px; line-height: 1.6; }
+        .text-body p { margin-bottom: 20px; }
+        .text-body b, .text-body strong { color: var(--comic-red); font-weight: 700; font-size: 1.1em; }
+        
+        .text-body ul { margin-left: 0; padding-left: 0; list-style: none; }
+        .text-body li { margin-bottom: 16px; padding-left: 36px; position: relative; }
+        .text-body li::before { 
+            content: '💥'; position: absolute; left: 0; top: 2px; font-size: 20px;
+        }
+
+        /* 布局 */
+        .layout-split { display: flex; gap: 40px; align-items: center; height: 100%; }
+        .layout-split > * { flex: 1; }
+        .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 40px; }
+        .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 32px; }
+
+        .box-title { font-family: var(--font-title); font-size: 36px; color: var(--comic-black); margin-bottom: 16px; line-height: 1.2; }
+
+        /* Cover Slide Specifics */
+        .cover-slide { text-align: center; justify-content: center; align-items: center; }
+        .cover-title { font-family: var(--font-title); font-size: 90px; color: var(--comic-white); margin-bottom: 24px; line-height: 1.1; text-shadow: 5px 5px 0 var(--comic-black), -2px -2px 0 var(--comic-black), 2px -2px 0 var(--comic-black), -2px 2px 0 var(--comic-black), 2px 2px 0 var(--comic-black); transform: rotate(-3deg); }
+        .cover-subtitle { font-family: var(--font-title); font-size: 36px; background: var(--comic-black); color: var(--comic-yellow); display: inline-block; padding: 10px 30px; border-radius: 50px; transform: rotate(2deg); box-shadow: 6px 6px 0 var(--comic-red); }
+
+        /* Math Formulas */
+        .formula-container {
+            font-family: var(--font-math); text-align: center;
+            margin: 18px 0; font-size: 32px; color: var(--comic-black);
+            overflow: visible; font-weight: bold;
+            padding: 4px 0 10px 0;
+        }
+
+        /* Nav & Hints */
+        .nav-dots { position: fixed; right: 24px; top: 50%; transform: translateY(-50%); display: flex; flex-direction: column; gap: 12px; z-index: 100; }
+        .dot { width: 14px; height: 14px; border: 3px solid var(--comic-black); background: var(--comic-white); cursor: pointer; transition: all 0.3s; border-radius: 50%; box-shadow: 2px 2px 0 var(--comic-black); }
+        .dot.active { background: var(--comic-red); transform: scale(1.3); }
+
+        .keyboard-hint { position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%); font-size: 16px; color: var(--comic-black); background: var(--comic-white); border: 3px solid var(--comic-black); padding: 6px 16px; border-radius: 20px; z-index: 100; font-family: var(--font-body); font-weight: bold; box-shadow: 4px 4px 0 var(--comic-black); opacity: 0.8; transition: opacity 0.5s; pointer-events: none; }
+
+        /* Bouncy Comic Animations */
+        .reveal { opacity: 0; transform: scale(0.8) rotate(-5deg); transition: all 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+        .slide.visible .reveal { opacity: 1; transform: scale(1) rotate(0deg); }
+        .reveal-pop { opacity: 0; transform: scale(0.5); transition: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.5); }
+        .slide.visible .reveal-pop { opacity: 1; transform: scale(1); }
+        
+        .reveal:nth-child(1), .reveal-pop:nth-child(1) { transition-delay: 0.1s; }
+        .reveal:nth-child(2), .reveal-pop:nth-child(2) { transition-delay: 0.2s; }
+        .reveal:nth-child(3), .reveal-pop:nth-child(3) { transition-delay: 0.3s; }
+        .reveal:nth-child(4), .reveal-pop:nth-child(4) { transition-delay: 0.4s; }
+        
+        [contenteditable="true"]:focus { outline: 4px dashed var(--comic-blue); background: rgba(255,255,255,0.8); border-radius: 8px; }
+        /* ===== 调研笔记：断行优化 =====
+           标题用 balance 让多行标题各处等长，正文用 pretty 避免末行孤字 */
+        h1, h2, h3, h4, [class*="title"], [class*="Title"], .eyebrow, .section-num {
+            text-wrap: balance;
+        }
+        p, li, .text-body, [class*="text-body"], .prose {
+            text-wrap: pretty;
+        }
+        /* ===== 调研笔记 1.4：中文字重上限 700 =====
+           <b>/<strong> 的 UA 默认 font-weight:bolder 在父级 700 时会解析成 900 */
+        b, strong { font-weight: 700; }
+
+    </style>
+</head>
+<body>
+    <!-- 半色调网点背景 -->
+    <div class="halftone-bg"></div>
+
+    <nav class="nav-dots"></nav>
+
+    <!-- Slide 1: 封面 -->
+    <section class="slide">
+        <div class="slide-inner cover-slide">
+            <div class="reveal-pop" style="position: absolute; top: 100px; left: 150px; width: 150px; height: 150px; background: var(--comic-blue); clip-path: polygon(50% 0%, 100% 38%, 82% 100%, 18% 100%, 0% 38%); z-index: -1;"></div>
+            <div class="reveal-pop" style="position: absolute; bottom: 100px; right: 150px; width: 200px; height: 200px; background: var(--comic-purple); border-radius: 50%; z-index: -1; box-shadow: 10px 10px 0 var(--comic-black);"></div>
+            
+            <div class="reveal">
+                <h1 class="cover-title" contenteditable="true">自揭老底：<br>我到底用AI做了哪些事儿</h1>
+                <div class="cover-subtitle" contenteditable="true">从 Prompt 到 Skill，再到养龙虾！</div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Slide 2: 引言 -->
+    <section class="slide">
+        <div class="slide-inner">
+            <h2 class="section-title reveal" contenteditable="true">第一幕：有趣的招聘标准</h2>
+            <div class="slide-content" style="justify-content: center;">
+                <div class="comic-panel reveal" style="max-width: 1000px; margin: 0 auto; width: 100%; padding: 40px 60px; height: auto;">
+                    <div class="narration-box">某天刷视频...</div>
+                    <div class="text-body" contenteditable="true">
+                        <p style="font-size: 28px;">看到一位 Kimi 的产品经理在招人，他提到了一个令人震惊的重点：</p>
+                        <div class="speech-bubble">
+                            "招人不仅看工作产出，<br>更要看你的 <b>Token 消耗量</b> 怎么样！"
+                        </div>
+                        <p style="margin-top: 30px; text-align: center; font-size: 32px; color: var(--comic-purple); font-family: var(--font-title);">
+                            这引发了我的灵魂拷问：<br>Token 消耗量，真能反映你对 AI 的压榨程度吗？
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Slide 3: 三个阶段总览 -->
+    <section class="slide">
+        <div class="slide-inner">
+            <h2 class="section-title reveal" style="background: var(--comic-blue);" contenteditable="true">我的 AI 进化史三部曲</h2>
+            <div class="slide-content" style="justify-content: center;">
+                <div class="grid-3">
+                    <div class="comic-panel reveal" style="padding: 30px;">
+                        <div class="narration-box" style="background: var(--comic-white);">Lv.1</div>
+                        <h3 class="box-title" contenteditable="true" style="color: var(--comic-red);">提示词时代<br>(Prompt)</h3>
+                        <div class="text-body" contenteditable="true" style="font-size: 22px;">
+                            一问一答，尝试寻找神级指令。探索 AI 的边界与局限，如同在黑盒外盲人摸象。
+                        </div>
+                    </div>
+                    <div class="comic-panel reveal" style="padding: 30px; transform: translateY(20px);">
+                        <div class="narration-box" style="background: var(--comic-white);">Lv.2</div>
+                        <h3 class="box-title" contenteditable="true" style="color: var(--comic-blue-ink);">技能时代<br>(Skill)</h3>
+                        <div class="text-body" contenteditable="true" style="font-size: 22px;">
+                            构建流水线。结合上下文，把 AI 封装成解决特定问题的专属工具。
+                        </div>
+                    </div>
+                    <div class="comic-panel reveal" style="padding: 30px;">
+                        <div class="narration-box" style="background: var(--comic-white);">Lv.3</div>
+                        <h3 class="box-title" contenteditable="true" style="color: var(--comic-purple);">智能体时代<br>(Agents)</h3>
+                        <div class="text-body" contenteditable="true" style="font-size: 22px;">
+                            自主爆发。给定目标与环境，让 AI 独立自主规划、调用工具、执行与反思。
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Slide 4: 阶段一 -->
+    <section class="slide">
+        <div class="slide-inner">
+            <h2 class="section-title reveal" contenteditable="true">阶段一：提示词 (Prompt)</h2>
+            <div class="slide-content" style="justify-content: center;">
+                <div class="comic-panel text-body reveal" style="max-width: 900px; margin: 0 auto; width: 100%; height: auto;">
+                    <div class="narration-box">幻想一句话搞定所有...</div>
+                    <h3 class="box-title" style="font-size: 32px; margin-top: 20px;" contenteditable="true">试图用玄学咒语操控 AI</h3>
+                    <ul contenteditable="true">
+                        <li><b>交互模式：</b> 一问一答，直接向大模型索要结果。</li>
+                        <li><b>典型场景：</b> “帮我写一篇1000字的爆款文章”。</li>
+                        <li><b>真实体感：</b> 看了无数 Prompt 技巧，但输出总是“差点意思”。</li>
+                        <li><b>产出质量：</b> 逻辑发散，随机性极强，翻车是常态！</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Slide 5: 阶段一痛点 -->
+    <section class="slide">
+        <div class="slide-inner">
+            <h2 class="section-title reveal" style="background: var(--comic-purple);" contenteditable="true">核心痛点：Prompt 不是万能的</h2>
+            <div class="slide-content" style="justify-content: center;">
+                <div class="grid-2" style="align-items: center;">
+                    <div class="comic-panel reveal" style="padding: 40px; height: auto;">
+                        <div class="narration-box" style="background: var(--comic-red); color: white;">大危机！</div>
+                        <h3 class="box-title" style="color: var(--comic-red);" contenteditable="true">上下文缺失困境</h3>
+                        <div class="text-body" contenteditable="true">
+                            <p>为什么大模型写不出你心里的文章？<br>因为 <b>缺少上下文 (Context)</b>。</p>
+                            <p>模型不了解业务背景、受众画像，也没有你踩坑的隐性经验。</p>
+                        </div>
+                    </div>
+                    <div class="reveal-pop" style="text-align: center;">
+                        <div class="speech-bubble" contenteditable="true" style="display: inline-block; font-size: 28px; text-align: left;">
+                            <b>结论：</b><br>
+                            我们需要把隐性知识和业务流，结构化地“喂”给 AI！
+                        </div>
+                        <div class="action-burst" style="margin-top: 20px;">BINGO!</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Slide 6: 阶段二 -->
+    <section class="slide">
+        <div class="slide-inner">
+            <h2 class="section-title reveal" style="background: var(--comic-blue);" contenteditable="true">阶段二：技能 (Skill)</h2>
+            <div class="slide-content" style="justify-content: center;">
+                <div class="comic-panel text-body reveal" style="max-width: 900px; margin: 0 auto; width: 100%; height: auto;">
+                    <div class="narration-box">工业化时代来临...</div>
+                    <h3 class="box-title" style="font-size: 32px; margin-top: 20px;" contenteditable="true">引入工作流 (Workflow)</h3>
+                    <ul contenteditable="true">
+                        <li><b>核心转变：</b> 从“对话框许愿” 走向 “工程化拆解”。</li>
+                        <li><b>运作方式：</b> 将任务拆分为多个节点，结合上下文，固化为“技能”。</li>
+                        <li><b>工具生态：</b> 使用 Coze, Dify 等平台编排 Pipeline。</li>
+                        <li><b>终极优势：</b> 结果可控、输出稳定，真正化身为生产力工具！</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Slide 7: 阶段二实践 -->
+    <section class="slide">
+        <div class="slide-inner">
+            <h2 class="section-title reveal" style="background: var(--comic-green);" contenteditable="true">动手实践：造工具啦！</h2>
+            <div class="slide-content" style="justify-content: center;">
+                <div class="grid-2">
+                    <div class="comic-panel reveal" style="height: auto;">
+                        <div class="narration-box">案例 A</div>
+                        <h3 class="box-title" contenteditable="true" style="margin-top: 10px;">沉浸式翻译器</h3>
+                        <div class="text-body" contenteditable="true">
+                            <p>不再只是简单的中英互译。</p>
+                            <p>强制 AI 输出<b>思考过程</b>，分析语境，实现多语言的精准适配（信达雅）。</p>
+                        </div>
+                    </div>
+                    <div class="comic-panel reveal" style="height: auto;">
+                        <div class="narration-box">案例 B</div>
+                        <h3 class="box-title" contenteditable="true" style="margin-top: 10px;">SEO 关键词助手</h3>
+                        <div class="text-body" contenteditable="true">
+                            <p>为团队打造的专属武器。</p>
+                            <p>将复杂的 SEO 竞品爬取与分析流程，封装成连小白都能一键运行的超级技能！</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Slide 8: Workflow 的局限性 -->
+    <section class="slide">
+        <div class="slide-inner">
+            <h2 class="section-title reveal" style="background: var(--comic-black); color: var(--comic-white);" contenteditable="true">Workflow 的局限性</h2>
+            <div class="slide-content" style="justify-content: center;">
+                <div class="comic-panel text-body reveal" style="max-width: 900px; margin: 0 auto; width: 100%; height: auto;">
+                    <div class="narration-box" style="background: var(--comic-red); color: white;">但是...</div>
+                    <p style="font-size: 28px; margin-top: 20px;">工作流虽然稳定，但它太 <b>线性和死板</b> 了！</p>
+                    <div style="background: rgba(0,0,0,0.05); padding: 20px; border: 3px dashed var(--comic-black); margin-top: 20px;">
+                        <ul contenteditable="true" style="margin: 0;">
+                            <li>遇到预设之外的异常，流程当场中断报错。</li>
+                            <li>无法根据实时反馈进行自我反思和路径调整。</li>
+                            <li>依然需要人工去“点击运行”和喂参数。</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Slide 9: 阶段三 -->
+    <section class="slide">
+        <div class="slide-inner">
+            <h2 class="section-title reveal" style="background: var(--comic-red);" contenteditable="true">阶段三：养龙虾时代</h2>
+            <div class="slide-content" style="justify-content: center;">
+                <div class="comic-panel text-body reveal" style="max-width: 900px; margin: 0 auto; width: 100%; height: auto;">
+                    <div class="narration-box">终极形态...</div>
+                    <h3 class="box-title" style="font-size: 36px; margin-top: 20px; color: var(--comic-red);" contenteditable="true">自主智能体 (Agents)</h3>
+                    <ul contenteditable="true">
+                        <li><b>为何叫“养龙虾”？</b> 因为你不再手把手教，而是建立生态。</li>
+                        <li><b>人类角色：</b> 养殖者！提供计算环境，下发工具库权限。</li>
+                        <li><b>AI 角色：</b> 自主生命体！给定目标后，它自主规划、调用 API、验证结果、失败重试。</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Slide 10: 养虾实践 -->
+    <section class="slide">
+        <div class="slide-inner">
+            <h2 class="section-title reveal" style="background: var(--comic-purple);" contenteditable="true">养虾实战：自动化内容工厂</h2>
+            <div class="slide-content" style="justify-content: center;">
+                <div class="grid-3" style="gap: 24px;">
+                    <div class="comic-panel reveal" style="padding: 24px; height: auto;">
+                        <div class="action-burst" style="font-size: 24px; padding: 10px; margin-bottom: 10px; background: var(--comic-blue);">STEP 1</div>
+                        <h3 class="box-title" style="font-size: 24px;" contenteditable="true">数据捕获</h3>
+                        <p class="text-body" style="font-size: 20px;" contenteditable="true">Agent 定期轮询 RSS，调用爬虫抓取网页并清洗去重。</p>
+                    </div>
+                    <div class="comic-panel reveal" style="padding: 24px; height: auto;">
+                        <div class="action-burst" style="font-size: 24px; padding: 10px; margin-bottom: 10px; background: var(--comic-red);">STEP 2</div>
+                        <h3 class="box-title" style="font-size: 24px;" contenteditable="true">推理重构</h3>
+                        <p class="text-body" style="font-size: 20px;" contenteditable="true">LLM 评估内容价值，自主思辨并撰写符合品牌语调的文章。</p>
+                    </div>
+                    <div class="comic-panel reveal" style="padding: 24px; height: auto;">
+                        <div class="action-burst" style="font-size: 24px; padding: 10px; margin-bottom: 10px; background: var(--comic-green);">STEP 3</div>
+                        <h3 class="box-title" style="font-size: 24px;" contenteditable="true">全自动发布</h3>
+                        <p class="text-body" style="font-size: 20px;" contenteditable="true">调用接口，将排版完毕的内容推送到指定平台，Zero-touch！</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Slide 11: 养龙虾的关键要素 -->
+    <section class="slide">
+        <div class="slide-inner">
+            <h2 class="section-title reveal" contenteditable="true">如何养好这只“龙虾”？</h2>
+            <div class="slide-content" style="justify-content: center;">
+                <div class="grid-2">
+                    <div class="comic-panel reveal" style="height: auto;">
+                        <div class="narration-box" style="background: var(--comic-blue); color: var(--comic-black);">要点一</div>
+                        <h3 class="box-title" style="margin-top: 10px;" contenteditable="true">给足空间与工具</h3>
+                        <div class="text-body" style="font-size: 22px;" contenteditable="true">
+                            <p>必须赋予联网搜索、文件读写、代码执行权限。</p>
+                            <p>可用 API 越丰富，它能逾越的障碍就越多！</p>
+                        </div>
+                    </div>
+                    <div class="comic-panel reveal" style="height: auto;">
+                        <div class="narration-box" style="background: var(--comic-purple); color: white;">要点二</div>
+                        <h3 class="box-title" style="margin-top: 10px;" contenteditable="true">严密的边界与目标</h3>
+                        <div class="text-body" style="font-size: 22px;" contenteditable="true">
+                            <p>目标必须具象化，严禁“帮我赚钱”这种死循环指令。</p>
+                            <p>设置超时捕获，防止模型在推理死胡同里烧光算力。</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Slide 12: 代价与价值 -->
+    <section class="slide">
+        <div class="slide-inner">
+            <h2 class="section-title reveal" style="background: var(--comic-black); color: var(--comic-white);" contenteditable="true">代价 VS 真正的价值</h2>
+            <div class="slide-content" style="justify-content: center;">
+                <div class="grid-2" style="align-items: center;">
+                    <div class="comic-panel reveal" style="border-color: var(--comic-red); height: auto;">
+                        <div class="narration-box" style="background: var(--comic-red); color: white;">代价是...</div>
+                        <h3 class="box-title" style="margin-top: 10px;" contenteditable="true">算力狂飙</h3>
+                        <div class="text-body" style="font-size: 24px;" contenteditable="true">
+                            <p>进入这个阶段，最直观的现象是：</p>
+                            <div class="action-burst" style="font-size: 32px; padding: 15px; margin-top: 20px; width: 100%;">Token 消耗量<br>指数级飙升！</div>
+                        </div>
+                    </div>
+                    <div class="comic-panel reveal" style="border-color: var(--comic-blue-ink); height: auto;">
+                        <div class="narration-box" style="background: var(--comic-blue); color: var(--comic-black);">价值是...</div>
+                        <h3 class="box-title" style="margin-top: 10px;" contenteditable="true">范式跃迁</h3>
+                        <div class="text-body" contenteditable="true" style="font-size: 24px;">
+                            <p>海量 Token 的背后是全自动的：Logic, Tool Call, Verify, Retry。</p>
+                            <p style="color: var(--comic-blue-ink); margin-top: 20px; font-weight: 700; font-size: 28px;">
+                                人类卸载了驱动器身份，<br>AI 真正成为了数字劳工！
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Slide 13: 总结 -->
+    <section class="slide">
+        <div class="slide-inner">
+            <h2 class="section-title reveal" contenteditable="true">大结局：回应最初的命题</h2>
+            <div class="slide-content" style="justify-content: center; align-items: center;">
+                <div class="comic-panel reveal text-body" style="text-align: center; max-width: 900px; width: 100%; height: auto;">
+                    <p style="font-size: 32px; margin-top: 20px;" contenteditable="true">
+                        Token 消耗量到底衡量了什么？
+                    </p>
+                    <div class="speech-bubble" style="font-size: 36px; line-height: 1.6; text-align: center; margin: 40px auto; width: 80%;" contenteditable="true">
+                        它客观映射了你使用 AI 的深度：<br>
+                        从 <span style="color: var(--comic-red);">"知识百科"</span> <br>
+                        跃迁至 <span style="color: var(--comic-blue-ink);">"全天候数字员工"</span>！
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Slide 14: 结语 -->
+    <section class="slide">
+        <div class="slide-inner">
+            <div class="slide-content" style="justify-content: center; align-items: center; text-align: center;">
+                <div class="reveal-pop">
+                    <div class="action-burst" style="font-size: 60px; padding: 40px;" contenteditable="true">打破对话框的边界！</div>
+                    <p class="text-body" style="font-size: 36px; margin: 40px 0; font-family: var(--font-title);" contenteditable="true">去构建工作流，去释放智能体！</p>
+                    <div style="display: inline-block; background: var(--comic-white); border: 5px solid var(--comic-black); box-shadow: 10px 10px 0 var(--comic-black); padding: 20px 50px; font-family: var(--font-title); font-size: 36px; border-radius: 10px;" contenteditable="true">
+                        你的下一个 AI 阶段是什么？
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Slide 15: 基础数学公式测试 -->
+    <section class="slide">
+        <div class="slide-inner">
+            <h2 class="section-title reveal" style="background: var(--comic-green);" contenteditable="true">数学公式：学霸时刻！</h2>
+            <div class="slide-content" style="justify-content: center;">
+                <div class="grid-2">
+                    <div class="comic-panel reveal" style="height: auto;">
+                        <div class="narration-box" style="background: var(--comic-white);">公式 A</div>
+                        <h3 class="box-title" style="font-size: 24px; margin-top: 10px;" contenteditable="true">薛定谔方程</h3>
+                        <div class="formula-container" style="font-size: 28px; margin: 20px 0;">
+                            <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
+                                <mrow>
+                                    <mi>i</mi><mi>ℏ</mi>
+                                    <mfrac><mi>∂</mi><mrow><mi>∂</mi><mi>t</mi></mrow></mfrac>
+                                    <mi>Ψ</mi>
+                                    <mo>=</mo>
+                                    <mrow><mo>[</mo><mo>−</mo><mfrac><msup><mi>ℏ</mi><mn>2</mn></msup><mrow><mn>2</mn><mi>m</mi></mrow></mfrac><msup><mi>∇</mi><mn>2</mn></msup><mo>+</mo><mi>V</mi><mo>]</mo></mrow>
+                                    <mi>Ψ</mi>
+                                </mrow>
+                            </math>
+                        </div>
+                    </div>
+                    <div class="comic-panel reveal" style="height: auto;">
+                        <div class="narration-box" style="background: var(--comic-white);">公式 B</div>
+                        <h3 class="box-title" style="font-size: 24px; margin-top: 10px;" contenteditable="true">正态分布</h3>
+                        <div class="formula-container" style="font-size: 28px; margin: 20px 0;">
+                            <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
+                                <mrow>
+                                    <mi>f</mi><mo stretchy="false">(</mo><mi>x</mi><mo stretchy="false">)</mo>
+                                    <mo>=</mo>
+                                    <mfrac><mn>1</mn><mrow><mi>σ</mi><msqrt><mn>2</mn><mi>π</mi></msqrt></mrow></mfrac>
+                                    <msup><mi>e</mi><mrow><mo>−</mo><mfrac><msup><mrow><mo stretchy="false">(</mo><mi>x</mi><mo>−</mo><mi>μ</mi><mo stretchy="false">)</mo></mrow><mn>2</mn></msup><mrow><mn>2</mn><msup><mi>σ</mi><mn>2</mn></msup></mrow></mfrac></mrow></msup>
+                                </mrow>
+                            </math>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Slide 16: 进阶数学公式测试 -->
+    <section class="slide">
+        <div class="slide-inner">
+            <h2 class="section-title reveal" style="background: var(--comic-purple);" contenteditable="true">进阶数学：脑力全开！</h2>
+            <div class="slide-content" style="justify-content: center;">
+                <div class="grid-2">
+                    <div class="comic-panel reveal" style="height: auto; padding: 20px;">
+                        <h3 class="box-title" style="font-size: 24px;" contenteditable="true">微积分与极限</h3>
+                        <div class="formula-container" style="font-size: 26px;">
+                            <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
+                                <mrow>
+                                    <munder><mo>lim</mo><mrow><mi>n</mi><mo>→</mo><mi>∞</mi></mrow></munder>
+                                    <munderover><mo>∑</mo><mrow><mi>i</mi><mo>=</mo><mn>1</mn></mrow><mi>n</mi></munderover>
+                                    <mfrac><mn>1</mn><mi>n</mi></mfrac>
+                                    <mi>f</mi><mo stretchy="false">(</mo><mfrac><mi>i</mi><mi>n</mi></mfrac><mo stretchy="false">)</mo>
+                                    <mo>=</mo>
+                                    <msubsup><mo>∫</mo><mn>0</mn><mn>1</mn></msubsup>
+                                    <mi>f</mi><mo stretchy="false">(</mo><mi>x</mi><mo stretchy="false">)</mo><mi>d</mi><mi>x</mi>
+                                </mrow>
+                            </math>
+                        </div>
+                    </div>
+                    
+                    <div class="comic-panel reveal" style="height: auto; padding: 20px;">
+                        <h3 class="box-title" style="font-size: 24px;" contenteditable="true">泰勒展开</h3>
+                        <div class="formula-container" style="font-size: 26px;">
+                            <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
+                                <mrow>
+                                    <msup><mi>e</mi><mi>x</mi></msup>
+                                    <mo>=</mo>
+                                    <munderover><mo>∑</mo><mrow><mi>n</mi><mo>=</mo><mn>0</mn></mrow><mi>∞</mi></munderover>
+                                    <mfrac><msup><mi>x</mi><mi>n</mi></msup><mrow><mi>n</mi><mo>!</mo></mrow></mfrac>
+                                    <mo>=</mo>
+                                    <mn>1</mn><mo>+</mo><mi>x</mi><mo>+</mo>
+                                    <mfrac><msup><mi>x</mi><mn>2</mn></msup><mn>2</mn></mfrac><mo>+</mo><mo>⋯</mo>
+                                </mrow>
+                            </math>
+                        </div>
+                    </div>
+                    
+                    <div class="comic-panel reveal" style="height: auto; padding: 20px; grid-column: span 2;">
+                        <h3 class="box-title" style="font-size: 24px;" contenteditable="true">矩阵与行列式</h3>
+                        <div class="formula-container" style="font-size: 28px;">
+                            <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
+                                <mrow>
+                                    <mi>A</mi><mo>=</mo>
+                                    <mrow><mo>[</mo><mtable><mtr><mtd><msub><mi>a</mi><mn>11</mn></msub></mtd><mtd><msub><mi>a</mi><mn>12</mn></msub></mtd></mtr><mtr><mtd><msub><mi>a</mi><mn>21</mn></msub></mtd><mtd><msub><mi>a</mi><mn>22</mn></msub></mtd></mtr></mtable><mo>]</mo></mrow>
+                                    <mo>,</mo><mspace width="1em"/>
+                                    <mo>det</mo><mo stretchy="false">(</mo><mi>A</mi><mo stretchy="false">)</mo><mo>=</mo>
+                                    <mrow><mo>|</mo><mtable><mtr><mtd><msub><mi>a</mi><mn>11</mn></msub></mtd><mtd><msub><mi>a</mi><mn>12</mn></msub></mtd></mtr><mtr><mtd><msub><mi>a</mi><mn>21</mn></msub></mtd><mtd><msub><mi>a</mi><mn>22</mn></msub></mtd></mtr></mtable><mo>|</mo></mrow>
+                                    <mo>=</mo><msub><mi>a</mi><mn>11</mn></msub><msub><mi>a</mi><mn>22</mn></msub><mo>-</mo><msub><mi>a</mi><mn>12</mn></msub><msub><mi>a</mi><mn>21</mn></msub>
+                                </mrow>
+                            </math>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Slide 17: 英文内容测试 -->
+    <section class="slide">
+        <div class="slide-inner">
+            <h2 class="section-title reveal" style="background: var(--comic-black); color: var(--comic-yellow);" contenteditable="true">English Translation Test</h2>
+            <div class="slide-content" style="justify-content: center;">
+                <div class="comic-panel reveal" style="padding: 32px; height: auto;">
+                    <div class="narration-box" style="background: var(--comic-blue); color: var(--comic-black);">MEANWHILE...</div>
+                    <div class="text-body" contenteditable="true" style="font-family: var(--font-title); font-size: 24px; line-height: 1.8; text-align: justify; margin-top: 10px;">
+                        <p>
+                            The transition from prompt-based interactions to autonomous intelligent agents represents a profound paradigm shift in software architecture. While traditional Large Language Models (LLMs) rely heavily on meticulously crafted prompts to generate single-turn responses, modern workflow orchestrations and agents introduce multi-step reasoning, API tool utilization, and self-reflection loops.
+                        </p>
+                        <p>
+                            This presentation explores the trajectory of this evolution, highlighting the fundamental limitations of static pipelines and emphasizing the exponential increase in computational token consumption as a necessary trade-off for true autonomy!
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <div class="keyboard-hint">使用 ↑↓ 方向键翻页 (Press Up/Down to Navigate)</div>
+
+    <script>
+        // Scale Controller
+        class ScaleController {
+            constructor(refWidth = 1280, refHeight = 720) {
+                this.refW = refWidth;
+                this.refH = refHeight;
+                this.inners = document.querySelectorAll('.slide-inner');
+                this.resize();
+                window.addEventListener('resize', () => this.resize());
+            }
+            isMobile() { return window.innerWidth < 768; }
+            resize() {
+                if (this.isMobile()) {
+                    this.inners.forEach(inner => { inner.style.transform = ''; });
+                    return;
+                }
+                const s = Math.min((window.innerWidth - 40) / this.refW, (window.innerHeight - 40) / this.refH);
+                this.inners.forEach(inner => { inner.style.transform = `scale(${s})`; });
+            }
+        }
+
+        // Presentation Controller
+        class SlidePresentation {
+            constructor() {
+                this.slides = document.querySelectorAll('.slide');
+                this.dots = document.querySelector('.nav-dots');
+                this.current = 0;
+                this.setupObserver();
+                this.setupKeyboard();
+                this.setupDots();
+                this.hideHintOnScroll();
+            }
+            setupObserver() {
+                const obs = new IntersectionObserver(entries => {
+                    entries.forEach(e => {
+                        if (e.isIntersecting) {
+                            e.target.classList.add('visible');
+                            this.current = [...this.slides].indexOf(e.target);
+                            this.updateDots();
+                        }
+                    });
+                }, { threshold: 0.5 });
+                this.slides.forEach(s => obs.observe(s));
+            }
+            setupKeyboard() {
+                window.addEventListener('keydown', e => {
+                    if (e.target.tagName.toLowerCase() === 'textarea' || e.target.isContentEditable) return;
+                    if (e.key === 'ArrowDown' || e.key === 'ArrowRight' || e.key === ' ') {
+                        e.preventDefault(); this.go(this.current + 1);
+                    } else if (e.key === 'ArrowUp' || e.key === 'ArrowLeft') {
+                        e.preventDefault(); this.go(this.current - 1);
+                    }
+                });
+            }
+            setupDots() {
+                if(!this.dots) return;
+                this.slides.forEach((s, i) => {
+                    const dot = document.createElement('div');
+                    dot.className = 'dot';
+                    dot.onclick = () => this.go(i);
+                    this.dots.appendChild(dot);
+                });
+                this.updateDots();
+            }
+            updateDots() {
+                if(!this.dots) return;
+                this.dots.querySelectorAll('.dot').forEach((d, i) => {
+                    d.classList.toggle('active', i === this.current);
+                });
+            }
+            go(i) {
+                if (i >= 0 && i < this.slides.length) {
+                    this.slides[i].scrollIntoView({ behavior: 'smooth' });
+                }
+            }
+            hideHintOnScroll() {
+                const hint = document.querySelector('.keyboard-hint');
+                if (!hint) return;
+                let hidden = false;
+                window.addEventListener('scroll', () => {
+                    if (!hidden && window.scrollY > 50) {
+                        hint.style.opacity = '0';
+                        hidden = true;
+                    }
+                });
+            }
+        }
+        
+        new ScaleController();
+        new SlidePresentation();
+    </script>
+</body>
+</html>

@@ -1,0 +1,627 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>自揭老底：我到底用AI做了哪些事儿</title>
+    <!-- 引入科技感字体 -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/cn-fontsource-misans-regular/font.css">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@300;400;500;700;900&display=swap">
+    <style>
+        /* ==========================================
+           1. Viewport Scale & Core Reset
+        ========================================== */
+        html, body { margin: 0; padding: 0; height: 100%; overflow-x: hidden; background: #F2F2F7; }
+        html { scroll-snap-type: y mandatory; scroll-behavior: smooth; }
+
+        :root {
+            --bg-light: #F2F2F7;
+            --accent-blue: #0069DD;
+            --accent-purple: #A640DA;
+            --accent-pink: #FF2D55;
+            --accent-cyan: #32ADE6;
+            --accent-yellow: #FFCC00;
+            --glass-bg: rgba(255, 255, 255, 0.65);
+            --glass-border: rgba(255, 255, 255, 0.9);
+            --text-main: #1D1D1F;
+            --text-muted: #55555E;
+            --font-title: 'MiSans', 'Noto Sans SC', system-ui, -apple-system, 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', 'Source Han Sans SC', 'Noto Sans CJK SC', sans-serif;
+            --font-body: 'Noto Sans SC', system-ui, -apple-system, 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', 'Source Han Sans SC', 'Noto Sans CJK SC', sans-serif;
+        }
+
+        body { font-family: var(--font-body); color: var(--text-main); }
+
+        .slide {
+            width: 100vw; height: 100vh; height: 100dvh;
+            scroll-snap-align: start;
+            position: relative; display: flex;
+            align-items: center; justify-content: center;
+            z-index: 10;
+        }
+
+        .slide-inner {
+            width: 1280px; height: 720px;
+            box-sizing: border-box;
+            flex-shrink: 0;
+            position: relative;
+            transform-origin: center center;
+            display: flex; flex-direction: column;
+            padding: 48px 56px;
+            z-index: 10;
+        }
+
+        .slide-content {
+            flex: 1; display: flex; flex-direction: column;
+            justify-content: center; position: relative;
+            z-index: 10;
+        }
+
+        .nav-dots {
+            position: fixed; right: 24px; top: 50%; transform: translateY(-50%);
+            display: flex; flex-direction: column; gap: 12px; z-index: 100;
+        }
+        .dot {
+            width: 10px; height: 10px; border-radius: 50%;
+            background: rgba(0,0,0,0.15); cursor: pointer; transition: all 0.3s;
+        }
+        .dot.active { background: var(--accent-blue); transform: scale(1.3); box-shadow: 0 0 10px rgba(0, 122, 255, 0.4); }
+
+        .keyboard-hint {
+            position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%);
+            font-size: 13px; color: rgba(0,0,0,0.4); z-index: 100;
+            transition: opacity 0.5s; pointer-events: none;
+            letter-spacing: 1px;
+        }
+
+        @media (max-width: 767px) {
+            html { scroll-snap-type: none; }
+            .slide { height: auto; min-height: 100svh; overflow: visible; scroll-snap-align: none; }
+            .slide-inner { width: 100% !important; height: auto !important; transform: none !important; padding: clamp(24px, 5vw, 40px); }
+            .nav-dots { display: none; }
+        }
+
+        /* ==========================================
+           2. Ambient Background (Light Liquid Glass Base)
+        ========================================== */
+        .ambient-bg { position: fixed; inset: 0; z-index: 0; overflow: hidden; background: var(--bg-light); }
+        .orb { 
+            position: absolute; border-radius: 50%; 
+            filter: blur(90px); opacity: 0.6; 
+            animation: float 20s infinite ease-in-out alternate; 
+        }
+        .orb-1 { width: 800px; height: 800px; background: var(--accent-pink); top: -200px; left: -100px; }
+        .orb-2 { width: 700px; height: 700px; background: var(--accent-purple); bottom: -200px; right: -100px; animation-delay: -5s; filter: blur(100px); }
+        .orb-3 { width: 600px; height: 600px; background: var(--accent-cyan); top: 30%; left: 30%; animation-delay: -10s; filter: blur(110px); }
+        .orb-4 { width: 500px; height: 500px; background: var(--accent-yellow); top: 10%; right: 20%; animation-delay: -15s; filter: blur(100px); opacity: 0.4; }
+
+        @keyframes float {
+            0% { transform: translate(0, 0) scale(1); }
+            100% { transform: translate(120px, 90px) scale(1.05); }
+        }
+
+        /* ==========================================
+           3. Glassmorphism UI Components
+        ========================================== */
+        .glass-panel {
+            background: var(--glass-bg);
+            backdrop-filter: blur(40px) saturate(150%);
+            -webkit-backdrop-filter: blur(40px) saturate(150%);
+            border: 1px solid var(--glass-border);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.05), inset 0 1px 1px rgba(255, 255, 255, 1);
+            border-radius: 24px;
+            padding: 48px;
+            position: relative;
+            overflow: hidden;
+            z-index: 10;
+        }
+        
+        /* Subtle shine sweep effect on panels
+           不要用「移动元素」实现扫光（left: -100% -> 200%）：面板是 overflow:hidden，
+           元素跑到右侧时会把 scrollWidth 撑到 2 倍以上，任何基于 scrollWidth 的溢出
+           检测都会随动画相位漂移。改为元素贴合面板（inset:0），只让渐变在背景里移动，
+           视觉一致但布局零溢出。 */
+        .glass-panel::before {
+            content: ''; position: absolute; inset: 0; pointer-events: none;
+            background-image: linear-gradient(100deg, transparent 38%, rgba(255,255,255,0.8) 50%, transparent 62%);
+            background-repeat: no-repeat;
+            background-size: 50% 100%;
+            background-position-x: -200%;
+            animation: shine 8s infinite;
+        }
+        @keyframes shine { 0%, 60% { background-position-x: -200%; } 100% { background-position-x: 300%; } }
+
+        .glass-card {
+            background: rgba(255, 255, 255, 0.5);
+            border: 1px solid rgba(255, 255, 255, 0.8);
+            border-radius: 20px;
+            padding: 32px;
+            backdrop-filter: blur(30px) saturate(150%);
+            -webkit-backdrop-filter: blur(30px) saturate(150%);
+            transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+            position: relative;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.03), inset 0 1px 1px rgba(255, 255, 255, 1);
+        }
+        .glass-card:hover {
+            transform: translateY(-8px);
+            background: rgba(255, 255, 255, 0.8);
+            box-shadow: 0 20px 40px rgba(0,0,0,0.08), inset 0 1px 1px rgba(255, 255, 255, 1);
+        }
+
+        /* 文字排版 */
+        .title-font { font-family: var(--font-title); font-weight: 700; letter-spacing: 1px; }
+        
+        .title-main { 
+            font-size: 76px; line-height: 1.2; margin-bottom: 24px; 
+            background: linear-gradient(135deg, #1D1D1F 0%, #434353 100%);
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+        }
+        .title-sub { 
+            font-size: 28px; color: var(--accent-blue); font-weight: 500; letter-spacing: 2px;
+        }
+        
+        .section-title { 
+            font-size: 56px; margin-bottom: 32px; 
+            background: linear-gradient(to right, var(--accent-blue), var(--accent-purple));
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+            display: inline-block;
+        }
+        
+        .text-body { font-size: 22px; line-height: 1.7; color: var(--text-muted); font-weight: 400; }
+        .text-body p { margin-bottom: 16px; }
+        .text-body b { color: var(--text-main); font-weight: 700; }
+        .text-body li { margin-bottom: 16px; margin-left: 24px; padding-left: 8px; position: relative; }
+        .text-body li::marker { color: var(--accent-blue); font-weight: bold; }
+
+        .highlight-box {
+            background: linear-gradient(90deg, rgba(0, 122, 255, 0.08) 0%, transparent 100%);
+            border-left: 4px solid var(--accent-blue);
+            padding: 24px; border-radius: 0 16px 16px 0; margin: 24px 0;
+            color: var(--text-main); font-size: 24px; font-weight: 500;
+        }
+
+        .tag-label {
+            display: inline-block; padding: 6px 16px; border-radius: 50px;
+            font-size: 20px; font-weight: 700; letter-spacing: 1px;
+            background: rgba(0, 0, 0, 0.05); border: 1px solid rgba(0, 0, 0, 0.1);
+            color: var(--text-main); margin-bottom: 16px;
+        }
+        .tag-cyan { background: rgba(50, 173, 230, 0.15); color: var(--accent-blue); border-color: rgba(50, 173, 230, 0.3); }
+        .tag-purple { background: rgba(175, 82, 222, 0.15); color: var(--accent-purple); border-color: rgba(175, 82, 222, 0.3); }
+
+        .card-num { 
+            font-family: var(--font-title); font-size: 56px; font-weight: 700;
+            color: transparent; -webkit-text-stroke: 1.5px rgba(0,0,0,0.15);
+            margin-bottom: 16px; line-height: 1; transition: all 0.3s;
+        }
+        .glass-card:hover .card-num { color: rgba(0,122,255,0.05); -webkit-text-stroke: 1.5px var(--accent-blue); }
+        .card-title { font-size: 32px; color: var(--text-main); margin-bottom: 16px; font-weight: 700; }
+
+        /* 布局组件 */
+        .layout-split { display: flex; gap: 60px; align-items: center; height: 100%; }
+        .layout-split > * { flex: 1; }
+        .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 40px; }
+        .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 32px; }
+        .text-center { text-align: center; margin: 0 auto; display: flex; flex-direction: column; align-items: center; }
+
+        /* ==========================================
+           4. Animations
+        ========================================== */
+        .reveal { opacity: 0; transform: translateY(40px); transition: all 0.8s cubic-bezier(0.16, 1, 0.3, 1); }
+        .slide.visible .reveal { opacity: 1; transform: translateY(0); }
+        
+        .reveal-scale { opacity: 0; transform: scale(0.95); transition: opacity 0.8s ease, transform 0.8s cubic-bezier(0.16, 1, 0.3, 1); }
+        .slide.visible .reveal-scale { opacity: 1; transform: scale(1); }
+
+        .reveal:nth-child(1), .reveal-scale:nth-child(1) { transition-delay: 0.1s; }
+        .reveal:nth-child(2), .reveal-scale:nth-child(2) { transition-delay: 0.2s; }
+        .reveal:nth-child(3), .reveal-scale:nth-child(3) { transition-delay: 0.3s; }
+        .reveal:nth-child(4), .reveal-scale:nth-child(4) { transition-delay: 0.4s; }
+        
+        [contenteditable="true"]:focus { outline: none; background: rgba(0,0,0,0.03); border-radius: 8px; box-shadow: 0 0 0 2px rgba(0,122,255,0.3); }
+        /* ===== 调研笔记：断行优化 =====
+           标题用 balance 让多行标题各处等长，正文用 pretty 避免末行孤字 */
+        h1, h2, h3, h4, [class*="title"], [class*="Title"], .eyebrow, .section-num {
+            text-wrap: balance;
+        }
+        p, li, .text-body, [class*="text-body"], .prose {
+            text-wrap: pretty;
+        }
+        /* ===== 调研笔记 1.4：中文字重上限 700 =====
+           <b>/<strong> 的 UA 默认 font-weight:bolder 在父级 700 时会解析成 900 */
+        b, strong { font-weight: 700; }
+
+    </style>
+</head>
+<body>
+    <!-- 环境光背景 -->
+    <div class="ambient-bg">
+        <div class="orb orb-1"></div>
+        <div class="orb orb-2"></div>
+        <div class="orb orb-3"></div>
+        <div class="orb orb-4"></div>
+    </div>
+    
+    <nav class="nav-dots"></nav>
+
+    <!-- Slide 1: 封面 -->
+    <section class="slide">
+        <div class="slide-inner" style="justify-content: center; align-items: center;">
+            <div class="glass-panel text-center reveal-scale" style="max-width: 900px; width: 100%;">
+                <h1 class="title-main title-font" contenteditable="true">自揭老底：<br>我到底用AI做了哪些事儿</h1>
+                <div class="title-sub" contenteditable="true">从 Prompt 到 Skill，再到养龙虾</div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Slide 2: 引言 -->
+    <section class="slide">
+        <div class="slide-inner">
+            <h2 class="section-title title-font reveal" contenteditable="true">一个有趣的招聘标准</h2>
+            <div class="slide-content">
+                <div class="glass-panel reveal" style="max-width: 1000px; margin: 0 auto; width: 100%; padding: 40px 60px;">
+                    <div class="tag-label">思考</div>
+                    <div class="text-body" contenteditable="true">
+                        <p>看到一位 Kimi 的 PM 在招人，他提到了一个令人印象深刻的重点：</p>
+                        <div class="highlight-box" style="margin: 24px 0; padding: 24px;">
+                            "招人需要看你做了什么工作，以及你的 <b>Token 消耗量</b> 怎么样。"
+                        </div>
+                        <p>这引发了一个问题：你的 Token 消耗量，真的反映出你对 AI 的有效利用了吗？</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Slide 3: 三个阶段总览 -->
+    <section class="slide">
+        <div class="slide-inner">
+            <h2 class="section-title title-font reveal text-center" contenteditable="true">我用 AI 的三个阶段</h2>
+            <div class="slide-content">
+                <div class="grid-3">
+                    <div class="glass-card reveal-scale">
+                        <div class="card-num">01</div>
+                        <h3 class="card-title title-font" contenteditable="true">提示词时代<br><span style="font-size: 20px; color: var(--accent-blue); font-weight: 500;">(Prompt)</span></h3>
+                        <div class="text-body" contenteditable="true">
+                            一问一答，尝试寻找神级指令。探索 AI 的边界与局限。
+                        </div>
+                    </div>
+                    <div class="glass-card reveal-scale">
+                        <div class="card-num">02</div>
+                        <h3 class="card-title title-font" contenteditable="true">技能时代<br><span style="font-size: 20px; color: var(--accent-blue); font-weight: 500;">(Skill)</span></h3>
+                        <div class="text-body" contenteditable="true">
+                            构建工作流。结合上下文，把 AI 封装成解决特定问题的工具。
+                        </div>
+                    </div>
+                    <div class="glass-card reveal-scale">
+                        <div class="card-num">03</div>
+                        <h3 class="card-title title-font" contenteditable="true">养龙虾时代<br><span style="font-size: 20px; color: var(--accent-blue); font-weight: 500;">(Agents)</span></h3>
+                        <div class="text-body" contenteditable="true">
+                            自主智能体。给定目标与环境，让 AI 自主规划、执行与反思。
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Slide 4: 阶段一 -->
+    <section class="slide">
+        <div class="slide-inner">
+            <h2 class="section-title title-font reveal" contenteditable="true">阶段一：提示词 (Prompt)</h2>
+            <div class="slide-content">
+                <div class="glass-panel text-body reveal" style="max-width: 900px; margin: 0 auto; width: 100%;">
+                    <h3 class="title-font" style="font-size: 32px; margin-bottom: 24px; color: var(--text-main);" contenteditable="true">试图用一句话解决所有问题</h3>
+                    <ul contenteditable="true">
+                        <li><b>交互模式：</b> 一问一答，直接向大模型索要结果。</li>
+                        <li><b>典型场景：</b> “帮我写一篇1000字的爆款文章”、“帮我生成一个标题”。</li>
+                        <li><b>真实体感：</b> 写了无数的 Prompt，查阅了各种技巧，但出来的结果总觉得“差点意思”。</li>
+                        <li><b>产出质量：</b> 逻辑往往不受控，AI 的发挥具有很强的随机性。</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Slide 5: 阶段一痛点 -->
+    <section class="slide">
+        <div class="slide-inner">
+            <h2 class="section-title title-font reveal" contenteditable="true" style="background: linear-gradient(to right, #FF2D55, #AF52DE); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">核心痛点</h2>
+            <div class="slide-content">
+                <div class="glass-panel text-body reveal" style="max-width: 900px; margin: 0 auto; width: 100%;">
+                    <h3 class="title-font" style="font-size: 40px; margin-bottom: 24px; color: var(--text-main);" contenteditable="true">Prompt 并不是万能的</h3>
+                    <div class="text-body" contenteditable="true">
+                        <p>为什么大模型写不出你心里的那篇文章？因为 <b>缺少上下文 (Context)</b>。</p>
+                        <p style="margin-top: 20px;">单靠指令是不够的。AI 不知道你的业务背景，不知道你的受众，也不知道你之前试错的过程。</p>
+                        <div class="highlight-box" style="border-left-color: #FF2D55; background: linear-gradient(90deg, rgba(255, 45, 85, 0.08) 0%, transparent 100%); margin-top: 32px;">
+                            <b>结论：</b> 我们需要把隐性知识和业务流程，结构化地喂给 AI。
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Slide 6: 阶段二 -->
+    <section class="slide">
+        <div class="slide-inner">
+            <h2 class="section-title title-font reveal" contenteditable="true">阶段二：技能 (Skill)</h2>
+            <div class="slide-content">
+                <div class="glass-panel text-body reveal" style="max-width: 900px; margin: 0 auto; width: 100%;">
+                    <h3 class="title-font" style="font-size: 32px; margin-bottom: 24px; color: var(--text-main);" contenteditable="true">引入工作流 (Workflow)</h3>
+                    <ul contenteditable="true">
+                        <li><b>核心转变：</b> 从“对话框许愿” 走向 “工程化拆解”。</li>
+                        <li><b>运作方式：</b> 将任务拆分成多个节点，结合特定的上下文，固化为可复用的“技能”。</li>
+                        <li><b>工具组合：</b> 开始大量使用 Coze、Dify 等平台编排工作流。</li>
+                        <li><b>优势：</b> 结果变得可控、稳定，真正可以作为生产力工具。</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Slide 7: 阶段二实践 -->
+    <section class="slide">
+        <div class="slide-inner">
+            <h2 class="section-title title-font reveal" contenteditable="true">动手实践：构建实用工具</h2>
+            <div class="slide-content">
+                <div class="grid-2">
+                    <div class="glass-card reveal-scale">
+                        <div class="tag-label tag-cyan">个人提效</div>
+                        <h3 class="card-title title-font" contenteditable="true">沉浸式翻译器</h3>
+                        <div class="text-body" contenteditable="true">
+                            <p>不再只是简单的中英互译。</p>
+                            <p>要求 AI 提供翻译的<b>思考过程</b>，分析语境，甚至进行多语言的精准适配。</p>
+                        </div>
+                    </div>
+                    <div class="glass-card reveal-scale">
+                        <div class="tag-label tag-purple">团队赋能</div>
+                        <h3 class="card-title title-font" contenteditable="true">SEO 关键词助手</h3>
+                        <div class="text-body" contenteditable="true">
+                            <p>为团队内部开发的专属工具。</p>
+                            <p>结合公司实际业务场景，将复杂的 SEO 调研流程封装成一个任何人都能用的一键技能。</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Slide 8: Workflow 的局限性 -->
+    <section class="slide">
+        <div class="slide-inner">
+            <div class="slide-content layout-split">
+                <div class="reveal">
+                    <h2 class="section-title title-font" style="line-height: 1.2; margin-bottom: 24px; background: linear-gradient(to right, #FF9500, #FF2D55); -webkit-background-clip: text; -webkit-text-fill-color: transparent;" contenteditable="true">Workflow<br>的局限性</h2>
+                </div>
+                <div class="glass-panel reveal" style="padding: 36px 48px;">
+                    <div class="text-body" contenteditable="true">
+                        <p>虽然“技能”和“工作流”解决了稳定性问题，但它们是 <b>线性且静态的</b>。</p>
+                        <ul style="margin-top: 16px;">
+                            <li>遇到预设之外的异常，流程就会中断。</li>
+                            <li>无法根据实时反馈自我调整。</li>
+                            <li>仍然需要人类去“点击运行”或做大量的前置输入。</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Slide 9: 阶段三 -->
+    <section class="slide">
+        <div class="slide-inner">
+            <h2 class="section-title title-font reveal" contenteditable="true" style="background: linear-gradient(to right, #007AFF, #32ADE6); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">阶段三：养龙虾时代</h2>
+            <div class="slide-content">
+                <div class="glass-panel text-body reveal" style="max-width: 900px; margin: 0 auto; width: 100%;">
+                    <h3 class="title-font" style="font-size: 32px; margin-bottom: 24px; color: var(--text-main);" contenteditable="true">自主智能体 (Autonomous Agents)</h3>
+                    <ul contenteditable="true">
+                        <li><b>为什么叫“养龙虾”？</b> 因为你不再需要手把手教它每一步。</li>
+                        <li><b>你的角色：</b> 养殖者。提供环境、提供工具（鱼饵/水质）。</li>
+                        <li><b>AI 的角色：</b> 自主生物。你给它一个终极目标，它自己去规划路径、调用工具、评估结果、反思修正。</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Slide 10: 养虾实践 -->
+    <section class="slide">
+        <div class="slide-inner">
+            <h2 class="section-title title-font reveal" contenteditable="true">养虾实践：自动化内容生产</h2>
+            <div class="slide-content">
+                <div class="grid-3" style="gap: 24px;">
+                    <div class="glass-card reveal-scale text-center" style="padding: 40px 24px;">
+                        <div class="card-num">1</div>
+                        <h3 class="card-title title-font" style="font-size: 24px;" contenteditable="true">RSS 抓取</h3>
+                        <p class="text-body" style="font-size: 20px; line-height: 1.6;" contenteditable="true">Agent 自动订阅并抓取全网最新资讯源，进行初步数据清洗。</p>
+                    </div>
+                    <div class="glass-card reveal-scale text-center" style="padding: 40px 24px;">
+                        <div class="card-num">2</div>
+                        <h3 class="card-title title-font" style="font-size: 24px;" contenteditable="true">自主思考生成</h3>
+                        <p class="text-body" style="font-size: 20px; line-height: 1.6;" contenteditable="true">AI 自主评估信息价值，根据设定好的风格生成高质量文章。</p>
+                    </div>
+                    <div class="glass-card reveal-scale text-center" style="padding: 40px 24px;">
+                        <div class="card-num">3</div>
+                        <h3 class="card-title title-font" style="font-size: 24px;" contenteditable="true">自动发布</h3>
+                        <p class="text-body" style="font-size: 20px; line-height: 1.6;" contenteditable="true">通过接口，将排版好的内容自动分发到指定平台，全程无人干预。</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Slide 11: 养龙虾的关键要素 -->
+    <section class="slide">
+        <div class="slide-inner">
+            <h2 class="section-title title-font reveal" contenteditable="true">如何养好“龙虾”？</h2>
+            <div class="slide-content">
+                <div class="grid-2">
+                    <div class="glass-panel reveal-scale" style="padding: 40px;">
+                        <h3 class="title-font" style="font-size: 28px; margin-bottom: 20px; color: var(--text-main);" contenteditable="true">给足空间与工具</h3>
+                        <div class="text-body" style="font-size: 20px;" contenteditable="true">
+                            <p>Agent 需要联网搜索、读写文件、甚至调用外部 API 的能力。</p>
+                            <p style="margin-top: 16px;">工具越丰富，它能解决的问题维度就越高。</p>
+                        </div>
+                    </div>
+                    <div class="glass-panel reveal-scale" style="padding: 40px;">
+                        <h3 class="title-font" style="font-size: 28px; margin-bottom: 20px; color: var(--text-main);" contenteditable="true">清晰的边界与目标</h3>
+                        <div class="text-body" style="font-size: 20px;" contenteditable="true">
+                            <p>不能只说“帮我赚钱”，而是给出明确指令，比如“每天抓取新闻并总结”。</p>
+                            <p style="margin-top: 16px;">设定好纠错机制，防止它在死胡同里无限循环消耗 Token。</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Slide 12: 代价与价值 -->
+    <section class="slide">
+        <div class="slide-inner">
+            <h2 class="section-title title-font reveal" contenteditable="true" style="background: linear-gradient(to right, #FF2D55, #AF52DE); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">代价与真正的价值</h2>
+            <div class="slide-content">
+                <div class="grid-2">
+                    <div class="glass-card reveal-scale" style="padding: 40px; display: flex; flex-direction: column; justify-content: center; border-left: 4px solid var(--accent-pink);">
+                        <h3 class="title-font" style="font-size: 32px; margin-bottom: 24px; color: var(--text-main);" contenteditable="true">不可避免的代价</h3>
+                        <div class="text-body" style="font-size: 20px;" contenteditable="true">
+                            <p>在这个阶段，你会发现：</p>
+                            <p style="font-size: 28px; font-weight: 700; color: var(--accent-pink); margin-top: 24px;">Token 的消耗量<br>开始疯狂飙升。</p>
+                        </div>
+                    </div>
+                    <div class="glass-panel reveal-scale" style="padding: 40px; border-left: 4px solid var(--accent-purple);">
+                        <h3 class="title-font" style="font-size: 32px; margin-bottom: 24px; color: var(--text-main);" contenteditable="true">真正的独立价值</h3>
+                        <div class="text-body" contenteditable="true" style="font-size: 20px;">
+                            <p>Agent 在后台不断地思考、调用 API、失败重试、反思修正。</p>
+                            <p style="color: var(--accent-purple); margin-top: 24px; font-weight: 700; font-size: 24px;">不再是你推一下它走一步，<br>而是它自己在为你打工。</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Slide 13: 总结 -->
+    <section class="slide">
+        <div class="slide-inner">
+            <h2 class="section-title title-font reveal text-center" contenteditable="true">回到最初的问题</h2>
+            <div class="slide-content" style="align-items: center;">
+                <div class="glass-panel text-body reveal text-center" style="max-width: 900px; width: 100%; padding: 60px;">
+                    <p style="font-size: 32px; margin-bottom: 32px; color: var(--text-main);" contenteditable="true">
+                        Token 消耗量代表了什么？
+                    </p>
+                    <div style="font-size: 40px; color: var(--accent-blue); font-family: var(--font-title); line-height: 1.5; font-weight: 700;" contenteditable="true">
+                        它代表了你从“把AI当百科”<br>到“把AI当员工”的转变深度。
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Slide 14: 结语 -->
+    <section class="slide">
+        <div class="slide-inner" style="justify-content: center; align-items: center;">
+            <div class="glass-panel reveal text-center" style="padding: 80px 100px; max-width: 1000px; width: 100%;">
+                <h1 class="title-font" style="font-size: 64px; margin-bottom: 24px; color: var(--text-main);" contenteditable="true">不要只停留在对话框里</h1>
+                <p class="text-body" style="font-size: 28px;" contenteditable="true">去构建工作流，去释放智能体。</p>
+                <div style="margin-top: 48px; display: inline-block; background: rgba(0, 122, 255, 0.08); border: 1px solid var(--accent-blue); color: var(--accent-blue); padding: 16px 40px; border-radius: 50px; font-family: var(--font-title); font-size: 24px; letter-spacing: 0; box-shadow: 0 10px 20px rgba(0, 122, 255, 0.1);" contenteditable="true">
+                    你的下一个 AI 阶段是什么？
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <div class="keyboard-hint">使用 ↑↓ 方向键或空格键翻页</div>
+
+    <script>
+        // 核心控制器：控制视图缩放
+        class ScaleController {
+            constructor(refWidth = 1280, refHeight = 720) {
+                this.refW = refWidth;
+                this.refH = refHeight;
+                this.inners = document.querySelectorAll('.slide-inner');
+                this.resize();
+                window.addEventListener('resize', () => this.resize());
+            }
+            isMobile() { return window.innerWidth < 768; }
+            resize() {
+                if (this.isMobile()) {
+                    this.inners.forEach(inner => { inner.style.transform = ''; });
+                    return;
+                }
+                const s = Math.min(window.innerWidth / this.refW, window.innerHeight / this.refH);
+                this.inners.forEach(inner => { inner.style.transform = `scale(${s})`; });
+            }
+        }
+
+        // 幻灯片演示控制
+        class SlidePresentation {
+            constructor() {
+                this.slides = document.querySelectorAll('.slide');
+                this.dots = document.querySelector('.nav-dots');
+                this.current = 0;
+                this.setupObserver();
+                this.setupKeyboard();
+                this.setupDots();
+                this.hideHintOnScroll();
+            }
+            setupObserver() {
+                const obs = new IntersectionObserver(entries => {
+                    entries.forEach(e => {
+                        if (e.isIntersecting) {
+                            e.target.classList.add('visible');
+                            this.current = [...this.slides].indexOf(e.target);
+                            this.updateDots();
+                        }
+                    });
+                }, { threshold: 0.5 });
+                this.slides.forEach(s => obs.observe(s));
+            }
+            setupKeyboard() {
+                window.addEventListener('keydown', e => {
+                    if (e.target.tagName.toLowerCase() === 'textarea' || e.target.isContentEditable) return; // 编辑时禁用翻页
+                    if (e.key === 'ArrowDown' || e.key === 'ArrowRight' || e.key === ' ') {
+                        e.preventDefault(); this.go(this.current + 1);
+                    } else if (e.key === 'ArrowUp' || e.key === 'ArrowLeft') {
+                        e.preventDefault(); this.go(this.current - 1);
+                    }
+                });
+            }
+            setupDots() {
+                if(!this.dots) return;
+                this.slides.forEach((s, i) => {
+                    const dot = document.createElement('div');
+                    dot.className = 'dot';
+                    dot.onclick = () => this.go(i);
+                    this.dots.appendChild(dot);
+                });
+                this.updateDots();
+            }
+            updateDots() {
+                if(!this.dots) return;
+                this.dots.querySelectorAll('.dot').forEach((d, i) => {
+                    d.classList.toggle('active', i === this.current);
+                });
+            }
+            go(i) {
+                if (i >= 0 && i < this.slides.length) {
+                    this.slides[i].scrollIntoView({ behavior: 'smooth' });
+                }
+            }
+            hideHintOnScroll() {
+                const hint = document.querySelector('.keyboard-hint');
+                if (!hint) return;
+                let hidden = false;
+                window.addEventListener('scroll', () => {
+                    if (!hidden && window.scrollY > 50) {
+                        hint.style.opacity = '0';
+                        hidden = true;
+                    }
+                });
+            }
+        }
+        
+        new ScaleController();
+        new SlidePresentation();
+    </script>
+</body>
+</html>

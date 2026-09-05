@@ -1,0 +1,734 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>自揭老底：我到底用AI做了哪些事儿 - Nobel Lecture</title>
+    <!-- 诺贝尔学术风：经典的宋体/Serif 字体组合，呈现顶级学术期刊和讲座的质感 -->
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;600;900&display=swap">
+    <style>
+        /* ==========================================
+           1. Viewport Scale & Core Reset
+        ========================================== */
+        html, body { margin: 0; padding: 0; height: 100%; overflow-x: hidden; background: #2A2A2A; }
+        html { scroll-snap-type: y mandatory; scroll-behavior: smooth; }
+
+        :root {
+            --bg-paper: #FDFDFD; /* 纯净的纸张白 */
+            --text-main: #1A1A1F; /* 带一点色相的深灰，避免纯黑 */
+            --text-secondary: #333333;
+            --accent-blue: #002147; /* 牛津蓝 (Oxford Blue) 常见于顶级学术场合 */
+            --accent-red: #8A1538; /* 胭脂红 (Crimson) 用于高亮 */
+            --border-color: #000000;
+            --font-serif: 'Times New Roman', 'Noto Serif SC', 'Source Han Serif SC', STSong, 'Songti SC', SimSun, serif;
+            --font-math: 'Cambria Math', 'Latin Modern Math', 'Times New Roman', serif;
+        }
+
+        body { font-family: var(--font-serif); color: var(--text-main); }
+
+        .slide {
+            width: 100vw; height: 100vh; height: 100dvh;
+            scroll-snap-align: start;
+            position: relative; display: flex;
+            align-items: center; justify-content: center;
+            z-index: 10;
+        }
+
+        /* 模拟 16:9 的学术幻灯片投影 */
+        .slide-inner {
+            width: 1280px; height: 720px;
+            box-sizing: border-box;
+            flex-shrink: 0;
+            position: relative;
+            transform-origin: center center;
+            display: flex; flex-direction: column;
+            padding: 50px 80px 70px 80px;
+            background: var(--bg-paper);
+            box-shadow: 0 0 20px rgba(0,0,0,0.5);
+            z-index: 10;
+        }
+
+        /* Mobile Layout */
+        @media (max-width: 767px) {
+            html { scroll-snap-type: none; }
+            .slide { height: auto; min-height: 100svh; overflow: visible; scroll-snap-align: none; padding: 10px 0; }
+            .slide-inner { width: 100% !important; height: auto !important; transform: none !important; padding: clamp(24px, 5vw, 40px); box-shadow: none; }
+            .nav-dots { display: none; }
+        }
+
+        /* ==========================================
+           2. Nobel Lecture Typography & Components
+        ========================================== */
+        /* 顶部标题栏 (Header) */
+        .slide-header {
+            border-bottom: 2px solid var(--border-color);
+            padding-bottom: 10px;
+            margin-bottom: 24px;
+            display: flex; justify-content: space-between; align-items: baseline;
+        }
+        .slide-title {
+            font-size: 40px;
+            color: var(--accent-blue);
+            font-weight: 700;
+            margin: 0;
+            letter-spacing: 1px;
+        }
+        .header-meta { font-size: 18px; color: var(--text-secondary); font-style: normal; }
+
+        /* 内容区 (Content Area) */
+        .slide-content {
+            flex: 1; display: flex; flex-direction: column;
+            position: relative; z-index: 10;
+        }
+
+        /* 底部信息栏 (Footer) */
+        .slide-footer {
+            position: absolute; bottom: 30px; left: 80px; right: 80px;
+            display: flex; justify-content: space-between;
+            font-size: 16px; color: var(--text-secondary);
+            border-top: 1px solid #CCC; padding-top: 10px;
+        }
+
+        /* 极致的学术排版 */
+        .text-body { font-size: 24px; line-height: 1.6; text-align: justify; }
+        .text-body p { margin-bottom: 18px; }
+        .text-body b, .text-body strong { font-weight: 700; color: var(--accent-blue); }
+        .highlight-red { color: var(--accent-red); font-weight: 700; }
+
+        .text-body ul, .text-body ol { margin-left: 40px; margin-bottom: 18px; padding-left: 0; }
+        .text-body li { margin-bottom: 10px; position: relative; list-style-type: disc; }
+
+        /* 引言区块 (Citation / Blockquote) */
+        .academic-quote {
+            border-left: 4px solid var(--accent-red);
+            padding: 10px 0 10px 30px;
+            margin: 30px 0;
+            font-size: 28px;
+            color: var(--text-main);
+            font-style: normal;
+            background: rgba(138, 21, 56, 0.03);
+        }
+
+        /* 数学与定理框 (Theorem Box) */
+        .theorem-box {
+            border: 1px solid var(--border-color);
+            padding: 30px;
+            margin: 20px 0;
+            position: relative;
+            background: #FAFAFA;
+        }
+        .theorem-title {
+            position: absolute; top: -15px; left: 20px;
+            background: var(--bg-paper); padding: 0 10px;
+            font-weight: 700; font-size: 20px; color: var(--accent-blue);
+        }
+
+        /* 布局网格 */
+        .layout-split { display: flex; gap: 60px; align-items: flex-start; height: 100%; }
+        .layout-split > * { flex: 1; }
+        .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 50px; }
+        .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 40px; }
+
+        /* 封面特定样式 (Cover Slide) */
+        .cover-slide { align-items: center; justify-content: center; text-align: center; }
+        .nobel-medal-placeholder { 
+            width: 120px; height: 120px; border: 2px solid #DAA520; border-radius: 50%; 
+            margin: 0 auto 40px; display: flex; align-items: center; justify-content: center;
+            font-size: 16px; color: #8F6D15; text-transform: uppercase; font-weight: bold; letter-spacing: 2px;
+        }
+        .cover-title { font-size: 64px; color: var(--text-main); margin-bottom: 20px; font-weight: 700; line-height: 1.3; }
+        .cover-subtitle { font-size: 32px; color: var(--accent-blue); margin-bottom: 60px; font-style: normal; }
+        .author-block { font-size: 24px; line-height: 1.6; }
+        .author-name { font-size: 32px; font-weight: 600; margin-bottom: 10px; }
+
+        /* 数学公式 */
+        .formula-container {
+            font-family: var(--font-math); text-align: center;
+            margin: 18px 0; font-size: 36px;
+            overflow: visible;
+            padding: 4px 0 10px 0;
+        }
+
+        /* 极简淡入动画 (严肃学术不使用夸张动画) */
+        .reveal { opacity: 0; transition: opacity 0.8s ease-in-out; }
+        .slide.visible .reveal { opacity: 1; }
+        .reveal:nth-child(1) { transition-delay: 0.1s; }
+        .reveal:nth-child(2) { transition-delay: 0.3s; }
+        .reveal:nth-child(3) { transition-delay: 0.5s; }
+        .reveal:nth-child(4) { transition-delay: 0.7s; }
+
+        /* 隐藏右侧导航点，采用纯键盘翻页以保持严肃 */
+        .nav-dots { display: none; }
+        .keyboard-hint { position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%); font-size: 14px; color: #666; z-index: 100; font-family: Arial, sans-serif; transition: opacity 0.5s; pointer-events: none; }
+
+        [contenteditable="true"]:focus { outline: 1px dotted var(--accent-blue); background: rgba(0, 33, 71, 0.03); }
+        /* ===== 调研笔记：断行优化 =====
+           标题用 balance 让多行标题各处等长，正文用 pretty 避免末行孤字 */
+        h1, h2, h3, h4, [class*="title"], [class*="Title"], .eyebrow, .section-num {
+            text-wrap: balance;
+        }
+        p, li, .text-body, [class*="text-body"], .prose {
+            text-wrap: pretty;
+        }
+        /* ===== 调研笔记 1.4：中文字重上限 700 =====
+           <b>/<strong> 的 UA 默认 font-weight:bolder 在父级 700 时会解析成 900 */
+        b, strong { font-weight: 700; }
+
+    </style>
+</head>
+<body>
+
+    <!-- Slide 1: 封面 -->
+    <section class="slide">
+        <div class="slide-inner cover-slide">
+            <div class="reveal">
+                <div class="nobel-medal-placeholder">LECTURE<br>2026</div>
+                <h1 class="cover-title" contenteditable="true">自揭老底：我到底用 AI 做了哪些事儿</h1>
+                <div class="cover-subtitle" contenteditable="true">—— 从 Prompt Engineering 到 Autonomous Agents 的演进范式</div>
+                
+                <div class="author-block" contenteditable="true">
+                    <div class="author-name">汇报人：AI 探索者</div>
+                    <div>斯德哥尔摩音乐厅 (Stockholm Concert Hall)</div>
+                    <div>2026年12月10日</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Slide 2: 引言 -->
+    <section class="slide">
+        <div class="slide-inner">
+            <header class="slide-header">
+                <h2 class="slide-title" contenteditable="true">1. 引言：评估 AI 利用深度的全新标尺</h2>
+                <div class="header-meta">Introduction</div>
+            </header>
+            <div class="slide-content" style="justify-content: center;">
+                <div class="text-body reveal" style="max-width: 1000px; margin: 0 auto;">
+                    <p>在近期的产业界观察中，某前沿 AI 研发团队（Kimi）的产品负责人在招募专家时，提出了一个极具学术启发性的评估标准：</p>
+                    
+                    <div class="academic-quote" contenteditable="true">
+                        “评估候选人，不仅要考察其显性的工作产出，更应当审查其底层系统的 <span class="highlight-red">Token 消耗规模</span>。”
+                    </div>
+                    
+                    <p style="margin-top: 40px;">这一论断引出了本次汇报的核心研究问题：<br><b>Token 的算力消耗规模，究竟在多大程度上反映了人类对人工智能系统利用范式的深刻变迁？</b></p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Slide 3: 三个阶段总览 -->
+    <section class="slide">
+        <div class="slide-inner">
+            <header class="slide-header">
+                <h2 class="slide-title" contenteditable="true">2. 理论框架：人工智能利用的三个历史阶段</h2>
+                <div class="header-meta">Theoretical Framework</div>
+            </header>
+            <div class="slide-content" style="justify-content: center;">
+                <div class="grid-3">
+                    <div class="theorem-box reveal" style="height: auto;">
+                        <div class="theorem-title">Phase I</div>
+                        <h3 style="font-size: 28px; margin-top: 10px; color: var(--accent-red);" contenteditable="true">提示词时代 (Prompt)</h3>
+                        <div class="text-body" contenteditable="true" style="font-size: 22px;">
+                            基于自然语言的启发式问答。<br><br>核心在于通过指令工程（Prompt Engineering）探索大语言模型的生成边界与逻辑局限。
+                        </div>
+                    </div>
+                    <div class="theorem-box reveal" style="height: auto;">
+                        <div class="theorem-title">Phase II</div>
+                        <h3 style="font-size: 28px; margin-top: 10px; color: var(--accent-red);" contenteditable="true">技能时代 (Skill / Workflow)</h3>
+                        <div class="text-body" contenteditable="true" style="font-size: 22px;">
+                            基于图灵机逻辑的确定性编排。<br><br>将复杂任务解构为有向无环图 (DAG)，结合业务上下文，封装为可复用的工程节点。
+                        </div>
+                    </div>
+                    <div class="theorem-box reveal" style="height: auto;">
+                        <div class="theorem-title">Phase III</div>
+                        <h3 style="font-size: 28px; margin-top: 10px; color: var(--accent-red);" contenteditable="true">智能体时代 (Agents)</h3>
+                        <div class="text-body" contenteditable="true" style="font-size: 22px;">
+                            基于目标导向的自主执行系统。<br><br>人类仅设定终极目标与边界，AI 实体自主完成任务规划、工具调用、验证与回溯。
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Slide 4: 阶段一 -->
+    <section class="slide">
+        <div class="slide-inner">
+            <header class="slide-header">
+                <h2 class="slide-title" contenteditable="true">3. 第一阶段：提示词工程的局限性探索</h2>
+                <div class="header-meta">Phase I: Prompt Engineering</div>
+            </header>
+            <div class="slide-content layout-split">
+                <div class="reveal">
+                    <h3 style="font-size: 48px; line-height: 1.3; color: var(--accent-blue);" contenteditable="true">试图用一句话解决<br>所有复杂问题。</h3>
+                </div>
+                <div class="reveal text-body" style="padding-top: 20px;">
+                    <ul contenteditable="true">
+                        <li><b>交互协议：</b> 单轮或多轮的同步请求-响应 (Req/Res)。</li>
+                        <li><b>典型应用：</b> “撰写一篇1000字的综述文章”。</li>
+                        <li><b>实验体感：</b> 投入大量精力进行语义对齐，但输出结果往往表现出严重的“泛化平庸”。</li>
+                        <li><b>本质缺陷：</b> 推理过程不可见，输出具备极强的高随机性 (Stochasticity)。</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Slide 5: 阶段一痛点 -->
+    <section class="slide">
+        <div class="slide-inner">
+            <header class="slide-header">
+                <h2 class="slide-title" contenteditable="true">3.1 核心痛点：上下文缺失 (Context Deficit)</h2>
+                <div class="header-meta">The Core Challenge</div>
+            </header>
+            <div class="slide-content" style="justify-content: center;">
+                <div class="grid-2" style="align-items: center;">
+                    <div class="reveal text-body">
+                        <p>为何基础的 LLM 始终难以生成满足特定领域心智模型 (Mental Model) 的文本？</p>
+                        <p>其根源在于 <b>极度的上下文缺失</b>。</p>
+                        <p>单纯的提示词无法弥补巨大的信息鸿沟：模型未曾经历过业务的试错迭代，亦不掌握未被数字化的隐性知识 (Tacit Knowledge)。</p>
+                    </div>
+                    <div class="theorem-box reveal" style="padding: 40px; border-color: var(--accent-red);">
+                        <div class="theorem-title" style="color: var(--accent-red);">Lemma 1. (结论)</div>
+                        <div class="text-body" contenteditable="true" style="font-size: 28px; line-height: 1.6;">
+                            “必须构建结构化的信息管道，将人类的隐性业务 SOP 系统性地输入给 AI，而非仅仅在自然语言的修辞上进行打磨。”
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Slide 6: 阶段二 -->
+    <section class="slide">
+        <div class="slide-inner">
+            <header class="slide-header">
+                <h2 class="slide-title" contenteditable="true">4. 第二阶段：工作流的工程化引入</h2>
+                <div class="header-meta">Phase II: Workflow Orchestration</div>
+            </header>
+            <div class="slide-content layout-split">
+                <div class="reveal">
+                    <h3 style="font-size: 48px; line-height: 1.3; color: var(--accent-blue);" contenteditable="true">引入确定性工作流<br>(Workflow)</h3>
+                </div>
+                <div class="reveal text-body" style="padding-top: 20px;">
+                    <ul contenteditable="true">
+                        <li><b>范式转移：</b> 从“祈使句编程”转向“工程化节点拆解”。</li>
+                        <li><b>运作机制：</b> 复杂任务 → 拆解为单一功能的确定性子节点 → 封装为 API (Skill)。</li>
+                        <li><b>技术栈：</b> 依托流式编排引擎 (如 Coze, Dify 等)。</li>
+                        <li><b>系统优势：</b> 输出结果收敛、状态稳定，标志着 LLM 正式步入企业级生产力工具序列。</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Slide 7: 阶段二实践 -->
+    <section class="slide">
+        <div class="slide-inner">
+            <header class="slide-header">
+                <h2 class="slide-title" contenteditable="true">4.1 实验案例：工程化赋能实践</h2>
+                <div class="header-meta">Practical Implementations</div>
+            </header>
+            <div class="slide-content" style="justify-content: center;">
+                <div class="grid-2">
+                    <div class="theorem-box reveal" style="height: auto;">
+                        <div class="theorem-title">Case Study 1</div>
+                        <h3 style="font-size: 28px; margin-top: 10px;" contenteditable="true">沉浸式翻译与语义重构系统</h3>
+                        <div class="text-body" contenteditable="true" style="font-size: 24px;">
+                            <p>摒弃直接的端到端机器翻译。</p>
+                            <p>通过多节点串联，强制要求 AI <b>首先输出思维链 (Chain-of-Thought)</b> 与语境剖析，随后再基于约束规范进行目标语言的精准映射。</p>
+                        </div>
+                    </div>
+                    <div class="theorem-box reveal" style="height: auto;">
+                        <div class="theorem-title">Case Study 2</div>
+                        <h3 style="font-size: 28px; margin-top: 10px;" contenteditable="true">SEO 关键词集群分析流水线</h3>
+                        <div class="text-body" contenteditable="true" style="font-size: 24px;">
+                            <p>针对团队级协同开发。</p>
+                            <p>将原本高人工成本的竞品数据获取、分词清洗与意图聚类，硬编码为标准化的后台流水线，极大降低了使用者的操作门槛。</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Slide 8: Workflow 的局限性 -->
+    <section class="slide">
+        <div class="slide-inner">
+            <header class="slide-header">
+                <h2 class="slide-title" contenteditable="true">4.2 结构瓶颈：线性系统的脆弱性</h2>
+                <div class="header-meta">Limitations of Linear Workflows</div>
+            </header>
+            <div class="slide-content" style="justify-content: center;">
+                <div class="reveal text-body" style="max-width: 1000px; margin: 0 auto;">
+                    <p style="font-size: 32px; font-weight: 600; color: var(--accent-red); margin-bottom: 30px;">
+                        尽管工作流提升了鲁棒性，但其拓扑结构依然是线性和静态的。
+                    </p>
+                    <ul contenteditable="true" style="font-size: 28px; line-height: 1.8;">
+                        <li><b>缺乏异常自愈能力：</b> 面对未被预设在条件分支 (If-Else) 中的异常输入，整个管道会发生级联崩溃。</li>
+                        <li><b>状态僵化：</b> 系统无法根据外部环境或 API 的实时反馈信号动态修改执行路径。</li>
+                        <li><b>高度人工依赖：</b> 系统的启动与运行依然需要人类担任“触发器 (Trigger)”。</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Slide 9: 阶段三 -->
+    <section class="slide">
+        <div class="slide-inner">
+            <header class="slide-header">
+                <h2 class="slide-title" contenteditable="true">5. 第三阶段：智能体时代的降临</h2>
+                <div class="header-meta">Phase III: Autonomous Agents</div>
+            </header>
+            <div class="slide-content layout-split">
+                <div class="reveal">
+                    <h3 style="font-size: 48px; line-height: 1.3; color: var(--accent-blue);" contenteditable="true">释放自主智能体<br>(Agents)</h3>
+                </div>
+                <div class="reveal text-body" style="padding-top: 20px;">
+                    <ul contenteditable="true">
+                        <li><b>范式隐喻 (“养龙虾”)：</b> 放弃微观指令控制，转向宏观生态建设与规则设定。</li>
+                        <li><b>人类角色的退维：</b> 从“驾驶员”退居为“环境提供者”，负责分配算力资源与系统接口权限。</li>
+                        <li><b>AI 实体的主体性确立：</b> 在给定宏大目标后，自主利用 ReAct 框架完成任务解构、行为执行 (Action) 与效果观测 (Observation)。</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Slide 10: 养虾实践 -->
+    <section class="slide">
+        <div class="slide-inner">
+            <header class="slide-header">
+                <h2 class="slide-title" contenteditable="true">5.1 智能体实证：全自动化内容生成基建</h2>
+                <div class="header-meta">Automated Content Generation Infrastructure</div>
+            </header>
+            <div class="slide-content" style="justify-content: center;">
+                <div class="grid-3">
+                    <div class="theorem-box reveal" style="padding: 30px; height: auto;">
+                        <h3 style="font-size: 24px; margin-top: 0;" contenteditable="true">I. 数据捕获模块</h3>
+                        <div class="text-body" contenteditable="true" style="font-size: 20px;">
+                            守护进程 (Daemon) 定期轮询全网 RSS 及资讯源，调用无头浏览器抓取目标 DOM 树，并完成降噪去重。
+                        </div>
+                    </div>
+                    <div class="theorem-box reveal" style="padding: 30px; height: auto;">
+                        <h3 style="font-size: 24px; margin-top: 0;" contenteditable="true">II. 推理与重构模块</h3>
+                        <div class="text-body" contenteditable="true" style="font-size: 20px;">
+                            LLM 内核运用评分函数评估资讯的信息熵 (Information Entropy)，独立思辨并运用学术/商业规范重写论述。
+                        </div>
+                    </div>
+                    <div class="theorem-box reveal" style="padding: 30px; height: auto;">
+                        <h3 style="font-size: 24px; margin-top: 0;" contenteditable="true">III. 分发与部署模块</h3>
+                        <div class="text-body" contenteditable="true" style="font-size: 20px;">
+                            通过 Restful API 接口，将排版完成的 Markdown 文本自动推送至远端服务器，实现真正的 Zero-touch 运行。
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Slide 11: 养龙虾的关键要素 -->
+    <section class="slide">
+        <div class="slide-inner">
+            <header class="slide-header">
+                <h2 class="slide-title" contenteditable="true">5.2 成功构建 Agent 系统的核心变量</h2>
+                <div class="header-meta">Crucial Elements for Deployment</div>
+            </header>
+            <div class="slide-content" style="justify-content: center;">
+                <div class="grid-2">
+                    <div class="reveal text-body">
+                        <h3 style="font-size: 32px; line-height: 1.25; color: var(--accent-blue); margin-bottom: 20px;" contenteditable="true">1. 充分的工具授权 (Tool Empowerment)</h3>
+                        <p>Agent 跨越虚拟与现实边界的唯一途径是 API 授权。必须赋予其文件读写、网络检索以及执行沙盒代码 (Code Interpreter) 的能力。</p>
+                    </div>
+                    <div class="reveal text-body">
+                        <h3 style="font-size: 32px; line-height: 1.25; color: var(--accent-blue); margin-bottom: 20px;" contenteditable="true">2. 严密的边界定义 (Boundary Settings)</h3>
+                        <p>目标函数必须是可计算、可观测的。应极力避免如“提升业绩”等空泛指令。<br>同时需引入超时阻断 (Timeout Interruption)，防止模型陷入无效推理的死循环。</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Slide 12: 代价与价值 -->
+    <section class="slide">
+        <div class="slide-inner">
+            <header class="slide-header">
+                <h2 class="slide-title" contenteditable="true">6. 经济学视角：算力代价与独立价值</h2>
+                <div class="header-meta">Economic Perspective: Cost vs. Value</div>
+            </header>
+            <div class="slide-content" style="justify-content: center;">
+                <div class="grid-2">
+                    <div class="theorem-box reveal" style="padding: 40px; border-left: 6px solid var(--accent-red); height: auto;">
+                        <h3 style="font-size: 32px; color: var(--accent-red); margin-top: 0;" contenteditable="true">不可避免的算力代价</h3>
+                        <div class="text-body" style="font-size: 24px;" contenteditable="true">
+                            <p>在系统后台监控中，最核心的现象是：</p>
+                            <p style="font-size: 36px; font-weight: 700; margin-top: 24px;">Token 的消耗量<br>呈指数级飙升 (Exponential Surge)。</p>
+                        </div>
+                    </div>
+                    <div class="theorem-box reveal" style="padding: 40px; border-left: 6px solid var(--accent-blue); height: auto;">
+                        <h3 style="font-size: 32px; color: var(--accent-blue); margin-top: 0;" contenteditable="true">范式跃迁的终极价值</h3>
+                        <div class="text-body" contenteditable="true" style="font-size: 24px;">
+                            <p>海量算力的消耗，兑换的是系统在后台无休止的自我纠错与逻辑推演。</p>
+                            <p style="font-size: 30px; font-weight: 700; color: var(--accent-blue); margin-top: 24px;">人类彻底卸载了“驱动者”身份，<br>AI 完成了向“数字劳动力”的转化。</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Slide 13: 总结 -->
+    <section class="slide">
+        <div class="slide-inner">
+            <header class="slide-header">
+                <h2 class="slide-title" contenteditable="true">7. 结论</h2>
+                <div class="header-meta">Conclusion</div>
+            </header>
+            <div class="slide-content" style="justify-content: center; align-items: center;">
+                <div class="reveal text-body" style="text-align: center; max-width: 900px;">
+                    <p style="font-size: 32px; margin-bottom: 40px;" contenteditable="true">
+                        重审最初的假设：Token 消耗量究竟衡量了什么？
+                    </p>
+                    <div class="academic-quote" style="font-size: 36px; line-height: 1.6; text-align: left; padding: 30px 40px;" contenteditable="true">
+                        它是一把客观的标尺，精准映射了系统架构的演进深度：<br><br>
+                        标示着人类正将 AI 从静态的 <span style="text-decoration: line-through; color: #888;">"知识查询引擎"</span> <br>
+                        剥离，使其升维至 <span class="highlight-red">"全自动数字主体"</span> 的新纪元。
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Slide 14: 结语 -->
+    <section class="slide">
+        <div class="slide-inner">
+            <div class="slide-content" style="justify-content: center; align-items: center; text-align: center;">
+                <div class="reveal">
+                    <h1 style="font-size: 64px; font-weight: 700; color: var(--accent-blue); margin-bottom: 30px;" contenteditable="true">致谢</h1>
+                    <p class="text-body" style="font-size: 32px; margin-bottom: 50px;" contenteditable="true">打破对话框的边界，去构建工程流，去释放智能体。</p>
+                    <div style="font-size: 28px; font-weight: bold; border-top: 2px solid var(--border-color); padding-top: 20px; display: inline-block;" contenteditable="true">
+                        Q & A
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Slide 15: 基础数学公式测试 -->
+    <section class="slide">
+        <div class="slide-inner">
+            <header class="slide-header">
+                <h2 class="slide-title" contenteditable="true">附录 A: 物理与概率模型</h2>
+                <div class="header-meta">Appendix A: Mathematical Formulations</div>
+            </header>
+            <div class="slide-content" style="justify-content: center;">
+                <div class="theorem-box reveal">
+                    <div class="theorem-title">Equation 1. Schrödinger Equation</div>
+                    <div class="formula-container" style="margin: 30px 0 10px;">
+                        <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
+                            <mrow>
+                                <mi>i</mi><mi>ℏ</mi>
+                                <mfrac><mi>∂</mi><mrow><mi>∂</mi><mi>t</mi></mrow></mfrac>
+                                <mi>Ψ</mi>
+                                <mo stretchy="false">(</mo><mi mathvariant="bold">r</mi><mo>,</mo><mi>t</mi><mo stretchy="false">)</mo>
+                                <mo>=</mo>
+                                <mrow><mo>[</mo><mo>−</mo><mfrac><msup><mi>ℏ</mi><mn>2</mn></msup><mrow><mn>2</mn><mi>m</mi></mrow></mfrac><msup><mi>∇</mi><mn>2</mn></msup><mo>+</mo><mi>V</mi><mo stretchy="false">(</mo><mi mathvariant="bold">r</mi><mo>,</mo><mi>t</mi><mo stretchy="false">)</mo><mo>]</mo></mrow>
+                                <mi>Ψ</mi>
+                                <mo stretchy="false">(</mo><mi mathvariant="bold">r</mi><mo>,</mo><mi>t</mi><mo stretchy="false">)</mo>
+                            </mrow>
+                        </math>
+                    </div>
+                </div>
+                <div class="theorem-box reveal">
+                    <div class="theorem-title">Equation 2. Normal Distribution PDF</div>
+                    <div class="formula-container" style="margin: 30px 0 10px;">
+                        <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
+                            <mrow>
+                                <mi>f</mi><mo stretchy="false">(</mo><mi>x</mi><mo stretchy="false">)</mo>
+                                <mo>=</mo>
+                                <mfrac><mn>1</mn><mrow><mi>σ</mi><msqrt><mn>2</mn><mi>π</mi></msqrt></mrow></mfrac>
+                                <msup><mi>e</mi><mrow><mo>−</mo><mfrac><msup><mrow><mo stretchy="false">(</mo><mi>x</mi><mo>−</mo><mi>μ</mi><mo stretchy="false">)</mo></mrow><mn>2</mn></msup><mrow><mn>2</mn><msup><mi>σ</mi><mn>2</mn></msup></mrow></mfrac></mrow></msup>
+                            </mrow>
+                        </math>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Slide 16: 进阶数学公式测试 -->
+    <section class="slide">
+        <div class="slide-inner">
+            <header class="slide-header">
+                <h2 class="slide-title" contenteditable="true">附录 B: 高等数学演绎</h2>
+                <div class="header-meta">Appendix B: Advanced Mathematics</div>
+            </header>
+            <div class="slide-content" style="justify-content: center;">
+                <div class="grid-2">
+                    <div class="theorem-box reveal" style="height: auto;">
+                        <div class="theorem-title">Theorem 1. Limit & Integration</div>
+                        <div class="formula-container" style="font-size: 28px; margin: 30px 0 10px;">
+                            <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
+                                <mrow>
+                                    <munder><mo>lim</mo><mrow><mi>n</mi><mo>→</mo><mi>∞</mi></mrow></munder>
+                                    <munderover><mo>∑</mo><mrow><mi>i</mi><mo>=</mo><mn>1</mn></mrow><mi>n</mi></munderover>
+                                    <mfrac><mn>1</mn><mi>n</mi></mfrac>
+                                    <mi>f</mi><mo stretchy="false">(</mo><mfrac><mi>i</mi><mi>n</mi></mfrac><mo stretchy="false">)</mo>
+                                    <mo>=</mo>
+                                    <msubsup><mo>∫</mo><mn>0</mn><mn>1</mn></msubsup>
+                                    <mi>f</mi><mo stretchy="false">(</mo><mi>x</mi><mo stretchy="false">)</mo><mi>d</mi><mi>x</mi>
+                                </mrow>
+                            </math>
+                        </div>
+                    </div>
+                    <div class="theorem-box reveal" style="height: auto;">
+                        <div class="theorem-title">Theorem 2. Taylor Series</div>
+                        <div class="formula-container" style="font-size: 28px; margin: 30px 0 10px;">
+                            <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
+                                <mrow>
+                                    <msup><mi>e</mi><mi>x</mi></msup>
+                                    <mo>=</mo>
+                                    <munderover><mo>∑</mo><mrow><mi>n</mi><mo>=</mo><mn>0</mn></mrow><mi>∞</mi></munderover>
+                                    <mfrac><msup><mi>x</mi><mi>n</mi></msup><mrow><mi>n</mi><mo>!</mo></mrow></mfrac>
+                                    <mo>=</mo>
+                                    <mn>1</mn><mo>+</mo><mi>x</mi><mo>+</mo>
+                                    <mfrac><msup><mi>x</mi><mn>2</mn></msup><mn>2</mn></mfrac><mo>+</mo><mo>⋯</mo>
+                                </mrow>
+                            </math>
+                        </div>
+                    </div>
+                    <div class="theorem-box reveal" style="grid-column: span 2; height: auto;">
+                        <div class="theorem-title">Theorem 3. Matrix Determinant</div>
+                        <div class="formula-container" style="font-size: 32px; margin: 30px 0 10px;">
+                            <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
+                                <mrow>
+                                    <mi>A</mi><mo>=</mo>
+                                    <mrow><mo>[</mo><mtable><mtr><mtd><msub><mi>a</mi><mn>11</mn></msub></mtd><mtd><msub><mi>a</mi><mn>12</mn></msub></mtd></mtr><mtr><mtd><msub><mi>a</mi><mn>21</mn></msub></mtd><mtd><msub><mi>a</mi><mn>22</mn></msub></mtd></mtr></mtable><mo>]</mo></mrow>
+                                    <mo>,</mo><mspace width="1em"/>
+                                    <mo>det</mo><mo stretchy="false">(</mo><mi>A</mi><mo stretchy="false">)</mo><mo>=</mo>
+                                    <mrow><mo>|</mo><mtable><mtr><mtd><msub><mi>a</mi><mn>11</mn></msub></mtd><mtd><msub><mi>a</mi><mn>12</mn></msub></mtd></mtr><mtr><mtd><msub><mi>a</mi><mn>21</mn></msub></mtd><mtd><msub><mi>a</mi><mn>22</mn></msub></mtd></mtr></mtable><mo>|</mo></mrow>
+                                    <mo>=</mo><msub><mi>a</mi><mn>11</mn></msub><msub><mi>a</mi><mn>22</mn></msub><mo>-</mo><msub><mi>a</mi><mn>12</mn></msub><msub><mi>a</mi><mn>21</mn></msub>
+                                </mrow>
+                            </math>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Slide 17: 英文内容测试 -->
+    <section class="slide">
+        <div class="slide-inner">
+            <header class="slide-header">
+                <h2 class="slide-title" contenteditable="true">Abstract</h2>
+                <div class="header-meta">The Paradigm Shift in AI</div>
+            </header>
+            <div class="slide-content" style="justify-content: center;">
+                <div class="reveal">
+                    <div class="text-body" contenteditable="true" style="font-family: 'Times New Roman', Times, serif; font-size: 28px; line-height: 1.8; text-align: justify; text-justify: inter-word; hyphens: auto;">
+                        <p>
+                            The transition from prompt-based interactions to <b>autonomous intelligent agents</b> represents a profound paradigm shift in software architecture and human-computer symbiosis. While traditional Large Language Models (LLMs) rely heavily on meticulously crafted prompts to generate single-turn responses, modern workflow orchestrations and autonomous agents introduce multi-step reasoning, API tool utilization, and internal self-reflection loops.
+                        </p>
+                        <p>
+                            This presentation explores the trajectory of this evolution, highlighting the fundamental limitations of static pipelines and emphasizing the exponential increase in computational token consumption as a necessary economic trade-off for achieving true autonomy.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <div class="keyboard-hint">Press Arrow Keys to Navigate</div>
+
+    <script>
+        // 动态注入学术底栏
+        document.addEventListener("DOMContentLoaded", () => {
+            const inners = document.querySelectorAll('.slide-inner');
+            const total = inners.length;
+            inners.forEach((inner, index) => {
+                if(index === 0) return; // 封面不需要底栏
+                const footer = document.createElement('div');
+                footer.className = 'slide-footer';
+                footer.innerHTML = `
+                    <span>Nobel Lecture in Artificial Intelligence 2026</span>
+                    <span style="font-style: normal;">Page ${index + 1} of ${total}</span>
+                `;
+                inner.appendChild(footer);
+            });
+        });
+
+        // Scale Controller
+        class ScaleController {
+            constructor(refWidth = 1280, refHeight = 720) {
+                this.refW = refWidth;
+                this.refH = refHeight;
+                this.inners = document.querySelectorAll('.slide-inner');
+                this.resize();
+                window.addEventListener('resize', () => this.resize());
+            }
+            isMobile() { return window.innerWidth < 768; }
+            resize() {
+                if (this.isMobile()) {
+                    this.inners.forEach(inner => { inner.style.transform = ''; });
+                    return;
+                }
+                const s = Math.min((window.innerWidth - 40) / this.refW, (window.innerHeight - 40) / this.refH);
+                this.inners.forEach(inner => { inner.style.transform = `scale(${s})`; });
+            }
+        }
+
+        // Presentation Controller
+        class SlidePresentation {
+            constructor() {
+                this.slides = document.querySelectorAll('.slide');
+                this.current = 0;
+                this.setupObserver();
+                this.setupKeyboard();
+                this.hideHintOnScroll();
+            }
+            setupObserver() {
+                const obs = new IntersectionObserver(entries => {
+                    entries.forEach(e => {
+                        if (e.isIntersecting) {
+                            e.target.classList.add('visible');
+                            this.current = [...this.slides].indexOf(e.target);
+                        }
+                    });
+                }, { threshold: 0.5 });
+                this.slides.forEach(s => obs.observe(s));
+            }
+            setupKeyboard() {
+                window.addEventListener('keydown', e => {
+                    if (e.target.tagName.toLowerCase() === 'textarea' || e.target.isContentEditable) return;
+                    if (e.key === 'ArrowDown' || e.key === 'ArrowRight' || e.key === ' ') {
+                        e.preventDefault(); this.go(this.current + 1);
+                    } else if (e.key === 'ArrowUp' || e.key === 'ArrowLeft') {
+                        e.preventDefault(); this.go(this.current - 1);
+                    }
+                });
+            }
+            go(i) {
+                if (i >= 0 && i < this.slides.length) {
+                    this.slides[i].scrollIntoView({ behavior: 'smooth' });
+                }
+            }
+            hideHintOnScroll() {
+                const hint = document.querySelector('.keyboard-hint');
+                if (!hint) return;
+                let hidden = false;
+                window.addEventListener('scroll', () => {
+                    if (!hidden && window.scrollY > 50) {
+                        hint.style.opacity = '0';
+                        hidden = true;
+                    }
+                });
+            }
+        }
+        
+        new ScaleController();
+        new SlidePresentation();
+    </script>
+</body>
+</html>

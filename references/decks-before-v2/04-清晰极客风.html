@@ -1,0 +1,886 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>自揭老底：我到底用AI做了哪些事儿</title>
+    <!-- 极客/代码风格字体：Fira Code (等宽代码字体) & Noto Sans SC -->
+    <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;600&family=Noto+Sans+SC:wght@400;500;700;900&display=swap" rel="stylesheet">
+    <style>
+        /* ==========================================
+           1. Viewport Scale & Core Reset
+        ========================================== */
+        html, body { margin: 0; padding: 0; height: 100%; overflow-x: hidden; background: #EEF4EE; }
+        html { scroll-snap-type: y mandatory; scroll-behavior: smooth; }
+
+        :root {
+            --bg-canvas: #EEF4EE; /* 明亮的灰绿色底 */
+            --term-bg: #FFFFFF; /* 终端窗口背景：白色以保持明亮 */
+            --term-border: #1B4524; /* 极客暗绿色 */
+            --text-main: #203B26; /* 深绿黑文本 */
+            --text-muted: #56785D; /* 浅绿灰注释文本 */
+            --accent-green: #258238; /* 亮绿色点缀（已压暗至 WCAG AA）*/
+            --accent-blue: #0969DA; /* 代码高亮蓝 */
+            --accent-red: #CF222E; /* 代码高亮红 */
+            --highlight-bg: rgba(41, 143, 61, 0.08);
+            --font-mono: 'Fira Code', Consolas, 'Sarasa Mono SC', system-ui, 'PingFang SC', 'Microsoft YaHei', monospace;
+            --font-body: 'Noto Sans SC', system-ui, -apple-system, 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', 'Source Han Sans SC', 'Noto Sans CJK SC', sans-serif;
+            --font-math: 'Cambria Math', 'Times New Roman', serif;
+        }
+
+        body { font-family: var(--font-body); color: var(--text-main); }
+
+        /* Matrix Code Rain Background */
+        #matrix-canvas {
+            position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+            z-index: 0; pointer-events: none; opacity: 0.8;
+        }
+
+        .slide {
+            width: 100vw; height: 100vh; height: 100dvh;
+            scroll-snap-align: start;
+            position: relative; display: flex;
+            align-items: center; justify-content: center;
+            z-index: 10;
+        }
+
+        /* 幻灯片本体伪装成 Terminal 窗口 */
+        .slide-inner {
+            width: 1280px; height: 720px;
+            box-sizing: border-box;
+            flex-shrink: 0;
+            position: relative;
+            transform-origin: center center;
+            display: flex; flex-direction: column;
+            background: var(--term-bg);
+            border: 2px solid var(--term-border);
+            border-radius: 12px;
+            box-shadow: 16px 16px 0px rgba(27, 69, 36, 0.15);
+            overflow: hidden;
+            z-index: 10;
+        }
+
+        /* Terminal 顶部栏 */
+        .terminal-header {
+            background: var(--term-border);
+            height: 48px;
+            display: flex; align-items: center; padding: 0 20px;
+            font-family: var(--font-mono); font-size: 16px; color: #EEF4EE;
+        }
+        .terminal-header .dots { display: flex; gap: 8px; margin-right: 20px; }
+        .terminal-header .dot { width: 14px; height: 14px; border-radius: 50%; }
+        .dot.red { background: #FF5F56; }
+        .dot.yellow { background: #FFBD2E; }
+        .dot.green { background: #27C93F; }
+        .terminal-header .title { opacity: 0.8; font-size: 14px; }
+
+        /* Terminal 内容区 */
+        .terminal-body {
+            flex: 1; padding: 40px 60px;
+            display: flex; flex-direction: column;
+            position: relative; background: url('data:image/svg+xml;utf8,<svg width="20" height="20" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><circle cx="2" cy="2" r="1" fill="%231B4524" fill-opacity="0.05"/></svg>');
+        }
+
+        /* Mobile Layout */
+        @media (max-width: 767px) {
+            html { scroll-snap-type: none; }
+            .slide { height: auto; min-height: 100svh; overflow: visible; scroll-snap-align: none; padding: 20px 0; }
+            .slide-inner { width: 95% !important; height: auto !important; transform: none !important; box-shadow: 8px 8px 0px rgba(27, 69, 36, 0.15); }
+            .nav-dots { display: none; }
+            .terminal-body { padding: 24px; }
+        }
+
+        /* ==========================================
+           2. Geek Slide Components
+        ========================================== */
+        /* 标题样式：模拟命令行执行 */
+        .slide-title {
+            font-family: var(--font-mono);
+            font-size: 40px;
+            color: var(--term-border);
+            font-weight: 600;
+            margin-bottom: 32px;
+            border-bottom: 2px dashed rgba(27, 69, 36, 0.2);
+            padding-bottom: 16px;
+        }
+        .slide-title::before { content: '> '; color: var(--accent-green); font-weight: 700; }
+
+        .slide-content { flex: 1; display: flex; flex-direction: column; position: relative; z-index: 10; }
+
+        /* 文字排版与代码风 */
+        .text-body { font-size: 22px; line-height: 1.8; font-weight: 500; }
+        .text-body p { margin-bottom: 20px; }
+        .text-body b, .text-body strong { color: var(--term-border); font-weight: 700; }
+        
+        .text-body ul { margin-left: 0; padding-left: 0; list-style: none; }
+        .text-body li { margin-bottom: 16px; padding-left: 36px; position: relative; }
+        .text-body li::before { 
+            content: '>>'; position: absolute; left: 0; top: 0;
+            color: var(--accent-green); font-family: var(--font-mono); font-weight: 700; 
+        }
+
+        /* 行内代码标签 */
+        .code-tag {
+            font-family: var(--font-mono); font-size: 0.9em;
+            background: var(--highlight-bg); color: var(--accent-green);
+            padding: 4px 8px; border-radius: 4px; border: 1px solid rgba(41, 143, 61, 0.3);
+            font-weight: 600;
+        }
+
+        /* 代码块 / 数据块 (Code Box) */
+        .code-box {
+            background: #F6FAF6;
+            border: 2px solid rgba(27, 69, 36, 0.2);
+            border-left: 6px solid var(--accent-green);
+            padding: 24px;
+            font-family: var(--font-mono);
+            border-radius: 4px;
+            position: relative;
+            box-shadow: 4px 4px 0 rgba(27, 69, 36, 0.05);
+        }
+        .code-comment { color: var(--text-muted); margin-bottom: 12px; font-size: 18px; }
+        .code-keyword { color: var(--accent-blue); font-weight: bold; }
+        .code-string { color: var(--accent-red); }
+        .code-number { color: #0550AE; }
+
+        /* 布局 */
+        .layout-split { display: flex; gap: 50px; align-items: flex-start; height: 100%; }
+        .layout-split > * { flex: 1; }
+        .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 40px; }
+        .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 32px; }
+
+        /* 卡片 */
+        .geek-card {
+            border: 2px solid var(--term-border);
+            padding: 32px; background: #FFF;
+            position: relative; transition: transform 0.3s;
+            display: flex; flex-direction: column;
+        }
+        .geek-card:hover { transform: translate(-4px, -4px); box-shadow: 8px 8px 0px rgba(27, 69, 36, 0.15); }
+        .card-header { font-family: var(--font-mono); font-size: 20px; color: var(--text-muted); border-bottom: 1px solid var(--term-border); padding-bottom: 8px; margin-bottom: 20px; display: flex; justify-content: space-between; }
+        
+        .box-title { font-size: 28px; font-weight: 700; color: var(--term-border); margin-bottom: 16px; }
+
+        /* Cover Slide Specifics */
+        .cover-slide { align-items: flex-start; justify-content: center; padding-left: 80px; }
+        .cover-title { font-family: var(--font-mono); font-size: 72px; color: var(--term-border); margin-bottom: 24px; line-height: 1.2; font-weight: 600; }
+        .cover-subtitle { font-family: var(--font-body); font-size: 32px; color: var(--accent-green); margin-bottom: 60px; font-weight: 700; }
+        .blinking-cursor { display: inline-block; width: 30px; height: 80px; background: var(--accent-green); vertical-align: bottom; margin-left: 10px; animation: blink 1s step-end infinite; }
+        @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0; } }
+
+        /* Math Formulas */
+        .formula-container {
+            font-family: var(--font-math); text-align: center;
+            margin: 18px 0; font-size: 32px; color: var(--text-main);
+            overflow: visible; font-weight: bold;
+            padding: 4px 0 10px 0;
+        }
+
+        /* Abstract Text */
+        .abstract-text { font-family: var(--font-mono); font-size: 18px; line-height: 1.8; text-align: justify; }
+        
+        /* Nav & Hints */
+        .nav-dots { position: fixed; right: 24px; top: 50%; transform: translateY(-50%); display: flex; flex-direction: column; gap: 12px; z-index: 100; }
+        .dot { width: 12px; height: 12px; border: 2px solid var(--term-border); background: transparent; cursor: pointer; transition: all 0.3s; }
+        .dot.active { background: var(--accent-green); border-color: var(--accent-green); transform: scale(1.2); }
+
+        .keyboard-hint { position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%); font-size: 14px; color: var(--term-border); background: #FFF; border: 1px solid var(--term-border); padding: 4px 12px; z-index: 100; font-family: var(--font-mono); font-weight: 600; opacity: 0.6; transition: opacity 0.5s; pointer-events: none; }
+
+        /* Animations */
+        .reveal { opacity: 0; transform: translateY(15px); transition: all 0.6s ease-out; }
+        .slide.visible .reveal { opacity: 1; transform: translateY(0); }
+        .reveal:nth-child(1) { transition-delay: 0.1s; }
+        .reveal:nth-child(2) { transition-delay: 0.2s; }
+        .reveal:nth-child(3) { transition-delay: 0.3s; }
+        .reveal:nth-child(4) { transition-delay: 0.4s; }
+        
+        [contenteditable="true"]:focus { outline: 2px dashed var(--accent-green); background: var(--highlight-bg); }
+        /* ===== 调研笔记：断行优化 =====
+           标题用 balance 让多行标题各处等长，正文用 pretty 避免末行孤字 */
+        h1, h2, h3, h4, [class*="title"], [class*="Title"], .eyebrow, .section-num {
+            text-wrap: balance;
+        }
+        p, li, .text-body, [class*="text-body"], .prose {
+            text-wrap: pretty;
+        }
+        /* ===== 调研笔记 1.4：中文字重上限 700 =====
+           <b>/<strong> 的 UA 默认 font-weight:bolder 在父级 700 时会解析成 900 */
+        b, strong { font-weight: 700; }
+
+    </style>
+</head>
+<body>
+    <!-- 背景代码流 Canvas -->
+    <canvas id="matrix-canvas"></canvas>
+
+    <nav class="nav-dots"></nav>
+
+    <!-- Slide 1: 封面 -->
+    <section class="slide">
+        <div class="slide-inner">
+            <div class="terminal-header">
+                <div class="dots"><span class="dot red"></span><span class="dot yellow"></span><span class="dot green"></span></div>
+                <span class="title">~/presentations/ai_journey.sh</span>
+            </div>
+            <div class="terminal-body cover-slide">
+                <div class="reveal">
+                    <div class="code-comment" style="font-family: var(--font-mono); font-size: 24px; margin-bottom: 20px;">#!/bin/bash</div>
+                    <h1 class="cover-title" contenteditable="true">自揭老底：<br>我用AI做了哪些事<span class="blinking-cursor"></span></h1>
+                    <div class="cover-subtitle" contenteditable="true">From Prompt to Skills & Agents</div>
+                    
+                    <div class="code-box" style="display: inline-block; padding: 20px 40px;">
+                        <div style="font-size: 20px; line-height: 1.8;">
+                            <span class="code-keyword">const</span> author = <span class="code-string">"AI Developer"</span>;<br>
+                            <span class="code-keyword">let</span> status = <span class="code-string">"Refactoring workflows..."</span>;<br>
+                            <span class="code-keyword">export default</span> presentation;
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Slide 2: 引言 -->
+    <section class="slide">
+        <div class="slide-inner">
+            <div class="terminal-header">
+                <div class="dots"><span class="dot red"></span><span class="dot yellow"></span><span class="dot green"></span></div>
+                <span class="title">~/presentations/01_intro.md</span>
+            </div>
+            <div class="terminal-body">
+                <h2 class="slide-title" contenteditable="true">./01_有趣的招聘标准.sh</h2>
+                <div class="slide-content" style="justify-content: center;">
+                    <div class="grid-2" style="align-items: center;">
+                        <div class="reveal text-body" contenteditable="true">
+                            <p>近期看到一位 Kimi 产品经理在招人时，提出了一个极具穿透力的标准：</p>
+                            <p><b>“不仅看工作产出，更要看你的 Token 消耗量。”</b></p>
+                            <p style="margin-top: 30px;">这引发了我的核心思考：</p>
+                            <p><span class="code-tag">Token 消耗规模</span> 真的能反映出人类对 AI 的有效利用深度吗？</p>
+                        </div>
+                        <div class="reveal code-box" contenteditable="true" style="height: auto; padding: 32px;">
+                            <div class="code-comment">// Kimi PM Recruitment Standard</div>
+                            <div style="font-size: 20px; line-height: 1.8; margin-top: 10px;">
+                                <span class="code-keyword">function</span> <span class="code-number">evaluateCandidate</span>(candidate) {<br>
+                                &nbsp;&nbsp;<span class="code-keyword">if</span> (candidate.tokenUsage < 10000) {<br>
+                                &nbsp;&nbsp;&nbsp;&nbsp;<span class="code-keyword">return</span> <span class="code-string">"Needs more AI integration"</span>;<br>
+                                &nbsp;&nbsp;}<br>
+                                &nbsp;&nbsp;<span class="code-keyword">return</span> <span class="code-string">"Hire!"</span>;<br>
+                                }
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Slide 3: 三个阶段总览 -->
+    <section class="slide">
+        <div class="slide-inner">
+            <div class="terminal-header">
+                <div class="dots"><span class="dot red"></span><span class="dot yellow"></span><span class="dot green"></span></div>
+                <span class="title">~/presentations/02_framework.json</span>
+            </div>
+            <div class="terminal-body">
+                <h2 class="slide-title" contenteditable="true">cat framework.json | jq '.stages'</h2>
+                <div class="slide-content" style="justify-content: center;">
+                    <div class="grid-3">
+                        <div class="geek-card reveal">
+                            <div class="card-header"><span>[ID: 01]</span> <span>Type: String</span></div>
+                            <h3 class="box-title" contenteditable="true">提示词时代<br>(Prompt)</h3>
+                            <div class="text-body" contenteditable="true" style="font-size: 18px;">
+                                探索 AI 边界。<br>以一问一答为特征，不断调试输入指令以求得神级输出结果。
+                            </div>
+                        </div>
+                        <div class="geek-card reveal">
+                            <div class="card-header"><span>[ID: 02]</span> <span>Type: Function</span></div>
+                            <h3 class="box-title" contenteditable="true">技能时代<br>(Skill)</h3>
+                            <div class="text-body" contenteditable="true" style="font-size: 18px;">
+                                构建确定性工作流。<br>结合特定业务上下文，将 AI 封装为可复用的工程化工具节点。
+                            </div>
+                        </div>
+                        <div class="geek-card reveal">
+                            <div class="card-header"><span>[ID: 03]</span> <span>Type: Daemon</span></div>
+                            <h3 class="box-title" contenteditable="true">智能体时代<br>(Agents)</h3>
+                            <div class="text-body" contenteditable="true" style="font-size: 18px;">
+                                部署自主节点。<br>设定目标与环境，让 AI 独立完成规划、调用、执行与错误回溯。
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Slide 4: 阶段一 -->
+    <section class="slide">
+        <div class="slide-inner">
+            <div class="terminal-header">
+                <div class="dots"><span class="dot red"></span><span class="dot yellow"></span><span class="dot green"></span></div>
+                <span class="title">~/presentations/03_phase_1.md</span>
+            </div>
+            <div class="terminal-body">
+                <h2 class="slide-title" contenteditable="true">tail -f logs/phase_1_prompt.log</h2>
+                <div class="slide-content" style="justify-content: center;">
+                    <div class="text-body reveal" style="max-width: 900px; margin: 0 auto; width: 100%;">
+                        <p>试图用 <span class="code-tag">"One-shot Prompt"</span> 解决所有复杂问题：</p>
+                        <ul contenteditable="true">
+                            <li><b>交互协议：</b> 同步请求-响应 (Req/Res)，直接索要结果。</li>
+                            <li><b>典型输入：</b> “帮我写一篇1000字的爆款文章”。</li>
+                            <li><b>开发者体感：</b> 查阅无数 Prompt 工程指南，但输出仍觉“缺乏灵魂”。</li>
+                            <li><b>系统输出：</b> 逻辑发散，发挥不稳定，具备极强的高随机性 (Stochasticity)。</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Slide 5: 阶段一痛点 -->
+    <section class="slide">
+        <div class="slide-inner">
+            <div class="terminal-header">
+                <div class="dots"><span class="dot red"></span><span class="dot yellow"></span><span class="dot green"></span></div>
+                <span class="title">~/presentations/04_error.log</span>
+            </div>
+            <div class="terminal-body">
+                <h2 class="slide-title" style="color: var(--accent-red); border-bottom-color: rgba(207, 34, 46, 0.2);" contenteditable="true">>> STDERR: Prompt 并非万能</h2>
+                <div class="slide-content" style="justify-content: center;">
+                    <div class="grid-2" style="align-items: center; height: auto;">
+                        <div class="geek-card reveal" style="border-color: var(--accent-red);">
+                            <div class="card-header" style="color: var(--accent-red);">Exception: Context Deficit</div>
+                            <h3 class="box-title" contenteditable="true">上下文缺失困境</h3>
+                            <div class="text-body" contenteditable="true" style="font-size: 20px;">
+                                <p>大模型写不出你心里文章的本质原因：<b>缺少 Context</b>。</p>
+                                <p>模型不知道你的业务背景、用户画像，也没有你过去试错的隐性经验。</p>
+                            </div>
+                        </div>
+                        <div class="code-box reveal" style="border-left-color: var(--accent-red);">
+                            <div class="code-comment">// 核心解决方案</div>
+                            <div class="text-body" contenteditable="true" style="margin-top: 10px;">
+                                需要建立结构化管道，将<span class="code-tag">隐性业务流</span>封装后输入给 AI，而不是反复打磨玄学般的提示词。
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Slide 6: 阶段二 -->
+    <section class="slide">
+        <div class="slide-inner">
+            <div class="terminal-header">
+                <div class="dots"><span class="dot red"></span><span class="dot yellow"></span><span class="dot green"></span></div>
+                <span class="title">~/presentations/05_phase_2.md</span>
+            </div>
+            <div class="terminal-body">
+                <h2 class="slide-title" contenteditable="true">make workflow_orchestration</h2>
+                <div class="slide-content" style="justify-content: center;">
+                    <div class="text-body reveal" style="max-width: 900px; margin: 0 auto; width: 100%;">
+                        <p>引入 <span class="code-tag">Workflow (工作流)</span>，建立工程化确定性：</p>
+                        <ul contenteditable="true">
+                            <li><b>范式转变：</b> 从“对话框许愿”走向严格的节点拆解与管道拼接。</li>
+                            <li><b>运作机制：</b> 复杂任务 → 拆分为确定性子 Node → 固化为 Skill 接口。</li>
+                            <li><b>工具生态：</b> 依托 Coze, Dify, Flowise 等低代码平台进行 Pipeline 编排。</li>
+                            <li><b>核心优势：</b> 输出可控、稳定，使 LLM 真正符合企业级生产力工具的可用性标准。</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Slide 7: 阶段二实践 -->
+    <section class="slide">
+        <div class="slide-inner">
+            <div class="terminal-header">
+                <div class="dots"><span class="dot red"></span><span class="dot yellow"></span><span class="dot green"></span></div>
+                <span class="title">~/presentations/06_practice.json</span>
+            </div>
+            <div class="terminal-body">
+                <h2 class="slide-title" contenteditable="true">docker-compose up -d skills</h2>
+                <div class="slide-content" style="justify-content: center;">
+                    <div class="grid-2">
+                        <div class="geek-card reveal">
+                            <div class="card-header">Port: 8080 | Tag: 个人提效</div>
+                            <h3 class="box-title" contenteditable="true">沉浸式翻译引擎</h3>
+                            <div class="text-body" style="font-size: 20px;" contenteditable="true">
+                                <p>抛弃直译 API。<br>强制节点一输出<b>思考过程</b>与语境分析，节点二依据分析进行多语言精准适配，实现“信达雅”的本地化输出。</p>
+                            </div>
+                        </div>
+                        <div class="geek-card reveal">
+                            <div class="card-header">Port: 8081 | Tag: 团队赋能</div>
+                            <h3 class="box-title" contenteditable="true">SEO 关键词集群系统</h3>
+                            <div class="text-body" style="font-size: 20px;" contenteditable="true">
+                                <p>固化公司 SOP。<br>将原本繁琐的竞品爬取、词频清洗、意图分类封装为单次调用的 webhook，降低团队成员使用门槛。</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Slide 8: Workflow 的局限性 -->
+    <section class="slide">
+        <div class="slide-inner">
+            <div class="terminal-header">
+                <div class="dots"><span class="dot red"></span><span class="dot yellow"></span><span class="dot green"></span></div>
+                <span class="title">~/presentations/07_limitations.md</span>
+            </div>
+            <div class="terminal-body">
+                <h2 class="slide-title" contenteditable="true">dmesg | grep -i limits</h2>
+                <div class="slide-content" style="justify-content: center;">
+                    <div class="text-body reveal" style="max-width: 900px; margin: 0 auto;">
+                        <p>工作流大幅提升了稳定性，但本质仍是 <span class="code-tag">线性和静态的决策树</span>。</p>
+                        <div class="code-box" style="margin-top: 30px;">
+                            <ul contenteditable="true" style="margin: 0; font-size: 22px;">
+                                <li><b>异常中断：</b> 遇到代码中没有 `try-catch` 的预设外异常，流程直接崩溃。</li>
+                                <li><b>状态僵化：</b> 无法根据外部 API 的实时反馈动态调整下一步走向。</li>
+                                <li><b>人工依赖：</b> 依然需要人工点击“Run”，并填入大量结构化的前置参数。</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Slide 9: 阶段三 -->
+    <section class="slide">
+        <div class="slide-inner">
+            <div class="terminal-header">
+                <div class="dots"><span class="dot red"></span><span class="dot yellow"></span><span class="dot green"></span></div>
+                <span class="title">~/presentations/08_phase_3.md</span>
+            </div>
+            <div class="terminal-body">
+                <h2 class="slide-title" contenteditable="true">systemctl start autonomous_agent</h2>
+                <div class="slide-content" style="justify-content: center;">
+                    <div class="text-body reveal" style="max-width: 900px; margin: 0 auto; width: 100%;">
+                        <p>突破静态流限制，进入 <span class="code-tag">Autonomous Agents (智能体)</span> 时代：</p>
+                        <ul contenteditable="true">
+                            <li><b>隐喻“养龙虾”：</b> 放弃手把手编写步骤，转向建立闭环的执行生态。</li>
+                            <li><b>人类（养殖者）：</b> 负责提供计算环境，下发工具库权限（Read/Write/Search）。</li>
+                            <li><b>AI（自主生命）：</b> 给定宏大目标后，通过 `<Thought -> Action -> Observation>` 的 ReAct 框架，自主完成规划与试错修正。</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Slide 10: 养虾实践 -->
+    <section class="slide">
+        <div class="slide-inner">
+            <div class="terminal-header">
+                <div class="dots"><span class="dot red"></span><span class="dot yellow"></span><span class="dot green"></span></div>
+                <span class="title">~/presentations/09_agent_practice.sh</span>
+            </div>
+            <div class="terminal-body">
+                <h2 class="slide-title" contenteditable="true">./deploy_content_factory.sh</h2>
+                <div class="slide-content" style="justify-content: center;">
+                    <div class="grid-3" style="gap: 20px;">
+                        <div class="geek-card reveal" style="padding: 24px;">
+                            <div class="card-header">Process ID: 1001</div>
+                            <h3 class="box-title" style="font-size: 24px; margin-bottom: 12px;" contenteditable="true">泛源数据捕获</h3>
+                            <p class="text-body" style="font-size: 18px;" contenteditable="true">守护进程定期轮询 RSS，调用爬虫进行 HTML 转 Markdown，并完成初步的数据清洗与去重。</p>
+                        </div>
+                        <div class="geek-card reveal" style="padding: 24px;">
+                            <div class="card-header">Process ID: 1002</div>
+                            <h3 class="box-title" style="font-size: 24px; margin-bottom: 12px;" contenteditable="true">推理与重构</h3>
+                            <p class="text-body" style="font-size: 18px;" contenteditable="true">LLM 内核对资讯的知识密度进行评分，依据预设的品牌 Prompt 进行长文本的自主思辨与撰写。</p>
+                        </div>
+                        <div class="geek-card reveal" style="padding: 24px;">
+                            <div class="card-header">Process ID: 1003</div>
+                            <h3 class="box-title" style="font-size: 24px; margin-bottom: 12px;" contenteditable="true">分发与部署</h3>
+                            <p class="text-body" style="font-size: 18px;" contenteditable="true">调用 CMS REST API，将渲染完毕的内容推送至多平台，实现真正的 Zero-touch 全自动运营。</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Slide 11: 养龙虾的关键要素 -->
+    <section class="slide">
+        <div class="slide-inner">
+            <div class="terminal-header">
+                <div class="dots"><span class="dot red"></span><span class="dot yellow"></span><span class="dot green"></span></div>
+                <span class="title">~/presentations/10_best_practices.md</span>
+            </div>
+            <div class="terminal-body">
+                <h2 class="slide-title" contenteditable="true">cat rules/agent_guidelines.conf</h2>
+                <div class="slide-content" style="justify-content: center;">
+                    <div class="grid-2">
+                        <div class="code-box reveal" style="height: auto;">
+                            <div class="code-comment"># 1. Tool Empowerment (工具授权)</div>
+                            <h3 class="box-title" style="font-size: 24px;" contenteditable="true">给予充分的环境交互能力</h3>
+                            <div class="text-body" style="font-size: 18px;" contenteditable="true">
+                                <p>必须赋予联网搜索、文件系统访问、甚至是 Code Interpreter 执行环境。<br>可用 API 的丰富度，决定了 Agent 能够逾越多少非结构化的路障。</p>
+                            </div>
+                        </div>
+                        <div class="code-box reveal" style="height: auto;">
+                            <div class="code-comment"># 2. Boundary & Objective (边界设定)</div>
+                            <h3 class="box-title" style="font-size: 24px;" contenteditable="true">严密的 Prompt 防护网</h3>
+                            <div class="text-body" style="font-size: 18px;" contenteditable="true">
+                                <p>目标必须具象且可测量，避免“帮我赚钱”这种死循环指令。<br>严格设置 Max_Iterations 和超时异常捕获，防止模型在推理死胡同中耗尽算力。</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Slide 12: 代价与价值 -->
+    <section class="slide">
+        <div class="slide-inner">
+            <div class="terminal-header">
+                <div class="dots"><span class="dot red"></span><span class="dot yellow"></span><span class="dot green"></span></div>
+                <span class="title">~/presentations/11_economics.md</span>
+            </div>
+            <div class="terminal-body">
+                <h2 class="slide-title" contenteditable="true">htop | grep token_usage</h2>
+                <div class="slide-content" style="justify-content: center;">
+                    <div class="grid-2">
+                        <div class="geek-card reveal" style="border-left: 6px solid var(--accent-red); height: auto;">
+                            <div class="card-header" style="color: var(--accent-red);">Metric: Cost</div>
+                            <h3 class="box-title" contenteditable="true">算力的不可避免代价</h3>
+                            <div class="text-body" style="font-size: 20px;" contenteditable="true">
+                                <p>系统监控中最明显的指标异常：</p>
+                                <p style="font-size: 32px; font-weight: 700; color: var(--accent-red); margin-top: 20px; font-family: var(--font-mono);">
+                                    Token++ (指数级飙升)
+                                </p>
+                            </div>
+                        </div>
+                        <div class="geek-card reveal" style="border-left: 6px solid var(--accent-blue); height: auto;">
+                            <div class="card-header" style="color: var(--accent-blue);">Metric: Value</div>
+                            <h3 class="box-title" contenteditable="true">范式跃迁的独立价值</h3>
+                            <div class="text-body" contenteditable="true" style="font-size: 20px;">
+                                <p>海量 Token 的背后是不断的后台运算：Logic、Tool Call、Verify、Retry。</p>
+                                <p style="color: var(--accent-blue); margin-top: 20px; font-weight: 700; font-size: 24px;">
+                                    人类卸载了驱动者身份，<br>AI 正在成为真正的数字劳工。
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Slide 13: 总结 -->
+    <section class="slide">
+        <div class="slide-inner">
+            <div class="terminal-header">
+                <div class="dots"><span class="dot red"></span><span class="dot yellow"></span><span class="dot green"></span></div>
+                <span class="title">~/presentations/12_conclusion.md</span>
+            </div>
+            <div class="terminal-body">
+                <h2 class="slide-title" contenteditable="true">./summary.sh</h2>
+                <div class="slide-content" style="justify-content: center; align-items: center;">
+                    <div class="reveal text-body" style="text-align: center; max-width: 900px;">
+                        <p style="font-size: 30px; margin-bottom: 40px;" contenteditable="true">
+                            回归起点，Token 消耗量究竟衡量了什么？
+                        </p>
+                        <div class="code-box" style="font-size: 36px; line-height: 1.6; text-align: left; padding: 40px;" contenteditable="true">
+                            <span class="code-comment">// 结论输出：</span><br>
+                            它客观映射了系统架构的深度：<br>
+                            从 <span class="code-string">"知识检索百科"</span> <br>
+                            跃迁至 <span class="code-string">"全天候数字员工"</span> 的执行层级。
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Slide 14: 结语 -->
+    <section class="slide">
+        <div class="slide-inner">
+            <div class="terminal-header">
+                <div class="dots"><span class="dot red"></span><span class="dot yellow"></span><span class="dot green"></span></div>
+                <span class="title">~/presentations/exit.sh</span>
+            </div>
+            <div class="terminal-body" style="justify-content: center; align-items: center;">
+                <div class="reveal" style="text-align: center;">
+                    <h1 class="cover-title" style="font-size: 64px;" contenteditable="true">sudo break_the_chatbox</h1>
+                    <p class="text-body" style="font-size: 30px; margin: 30px 0 50px;" contenteditable="true">构建工程流 (Workflows) & 释放智能体 (Agents)。</p>
+                    <div style="display: inline-block; background: var(--term-border); color: #FFF; padding: 20px 50px; font-family: var(--font-mono); font-size: 28px; font-weight: bold; border-radius: 4px;" contenteditable="true">
+                        > 你的下一个 AI 阶段是什么？<span class="blinking-cursor" style="background: #FFF; height: 30px; margin-left: 8px;"></span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Slide 15: 数学公式测试 -->
+    <section class="slide">
+        <div class="slide-inner">
+            <div class="terminal-header">
+                <div class="dots"><span class="dot red"></span><span class="dot yellow"></span><span class="dot green"></span></div>
+                <span class="title">~/tests/math_advanced.test</span>
+            </div>
+            <div class="terminal-body">
+                <h2 class="slide-title" contenteditable="true">python -m render_mathml</h2>
+                <div class="slide-content" style="justify-content: center;">
+                    <div class="grid-2">
+                        <div class="code-box reveal" style="padding: 24px; height: auto;">
+                            <div class="code-comment">// 微积分与极限 (Calculus & Limits)</div>
+                            <div class="formula-container" style="font-size: 28px; margin: 15px 0;">
+                                <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
+                                    <mrow>
+                                        <munder>
+                                            <mo>lim</mo>
+                                            <mrow><mi>n</mi><mo>→</mo><mi>∞</mi></mrow>
+                                        </munder>
+                                        <munderover>
+                                            <mo>∑</mo>
+                                            <mrow><mi>i</mi><mo>=</mo><mn>1</mn></mrow>
+                                            <mi>n</mi>
+                                        </munderover>
+                                        <mfrac>
+                                            <mn>1</mn>
+                                            <mi>n</mi>
+                                        </mfrac>
+                                        <mi>f</mi>
+                                        <mo stretchy="false">(</mo>
+                                        <mfrac><mi>i</mi><mi>n</mi></mfrac>
+                                        <mo stretchy="false">)</mo>
+                                        <mo>=</mo>
+                                        <msubsup>
+                                            <mo>∫</mo>
+                                            <mn>0</mn>
+                                            <mn>1</mn>
+                                        </msubsup>
+                                        <mi>f</mi><mo stretchy="false">(</mo><mi>x</mi><mo stretchy="false">)</mo>
+                                        <mi>d</mi><mi>x</mi>
+                                    </mrow>
+                                </math>
+                            </div>
+                        </div>
+                        
+                        <div class="code-box reveal" style="padding: 24px; height: auto;">
+                            <div class="code-comment">// 泰勒级数 (Taylor Series)</div>
+                            <div class="formula-container" style="font-size: 28px; margin: 15px 0;">
+                                <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
+                                    <mrow>
+                                        <msup><mi>e</mi><mi>x</mi></msup>
+                                        <mo>=</mo>
+                                        <munderover>
+                                            <mo>∑</mo>
+                                            <mrow><mi>n</mi><mo>=</mo><mn>0</mn></mrow>
+                                            <mi>∞</mi>
+                                        </munderover>
+                                        <mfrac>
+                                            <msup><mi>x</mi><mi>n</mi></msup>
+                                            <mrow><mi>n</mi><mo>!</mo></mrow>
+                                        </mfrac>
+                                        <mo>=</mo>
+                                        <mn>1</mn><mo>+</mo><mi>x</mi><mo>+</mo>
+                                        <mfrac><msup><mi>x</mi><mn>2</mn></msup><mn>2</mn></mfrac><mo>+</mo>
+                                        <mo>⋯</mo>
+                                    </mrow>
+                                </math>
+                            </div>
+                        </div>
+                        
+                        <div class="code-box reveal" style="padding: 24px; grid-column: span 2; height: auto;">
+                            <div class="code-comment">// 矩阵与行列式 (Matrices & Determinants)</div>
+                            <div class="formula-container" style="font-size: 28px; margin: 15px 0;">
+                                <math xmlns="http://www.w3.org/1998/Math/MathML" display="block">
+                                    <mrow>
+                                        <mi>A</mi>
+                                        <mo>=</mo>
+                                        <mrow>
+                                            <mo>[</mo>
+                                            <mtable>
+                                                <mtr><mtd><msub><mi>a</mi><mn>11</mn></msub></mtd><mtd><msub><mi>a</mi><mn>12</mn></msub></mtd></mtr>
+                                                <mtr><mtd><msub><mi>a</mi><mn>21</mn></msub></mtd><mtd><msub><mi>a</mi><mn>22</mn></msub></mtd></mtr>
+                                            </mtable>
+                                            <mo>]</mo>
+                                        </mrow>
+                                        <mo>,</mo>
+                                        <mspace width="1em"/>
+                                        <mo>det</mo><mo stretchy="false">(</mo><mi>A</mi><mo stretchy="false">)</mo>
+                                        <mo>=</mo>
+                                        <mrow>
+                                            <mo>|</mo>
+                                            <mtable>
+                                                <mtr><mtd><msub><mi>a</mi><mn>11</mn></msub></mtd><mtd><msub><mi>a</mi><mn>12</mn></msub></mtd></mtr>
+                                                <mtr><mtd><msub><mi>a</mi><mn>21</mn></msub></mtd><mtd><msub><mi>a</mi><mn>22</mn></msub></mtd></mtr>
+                                            </mtable>
+                                            <mo>|</mo>
+                                        </mrow>
+                                        <mo>=</mo>
+                                        <msub><mi>a</mi><mn>11</mn></msub><msub><mi>a</mi><mn>22</mn></msub>
+                                        <mo>-</mo>
+                                        <msub><mi>a</mi><mn>12</mn></msub><msub><mi>a</mi><mn>21</mn></msub>
+                                    </mrow>
+                                </math>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Slide 16: 英文内容测试 -->
+    <section class="slide">
+        <div class="slide-inner">
+            <div class="terminal-header">
+                <div class="dots"><span class="dot red"></span><span class="dot yellow"></span><span class="dot green"></span></div>
+                <span class="title">~/tests/english_content.txt</span>
+            </div>
+            <div class="terminal-body">
+                <h2 class="slide-title" contenteditable="true">cat abstract_v2.txt</h2>
+                <div class="slide-content" style="justify-content: center;">
+                    <div class="code-box reveal" style="padding: 40px; height: auto;">
+                        <div class="code-comment">// SYSTEM_MESSAGE: English documentation parsing...</div>
+                        <div class="abstract-text text-body" contenteditable="true" style="margin-top: 20px;">
+                            <p>
+                                The transition from prompt-based interactions to <span class="code-tag">autonomous intelligent agents</span> represents a profound paradigm shift in software architecture. While traditional Large Language Models (LLMs) rely heavily on meticulously crafted prompts to generate single-turn responses, modern workflow orchestrations and agents introduce multi-step reasoning, API tool utilization, and self-reflection loops.
+                            </p>
+                            <p>
+                                This presentation explores the trajectory of this evolution, highlighting the fundamental limitations of static pipelines and emphasizing the exponential increase in computational token consumption as a necessary trade-off for true autonomy. The future of AI lies in its capability to execute background daemons as an active digital workforce.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <div class="keyboard-hint">Use Up/Down Arrow keys or Space to navigate [EOF]</div>
+
+    <script>
+        // Matrix Rain Canvas Animation (Light Theme)
+        const canvas = document.getElementById('matrix-canvas');
+        const ctx = canvas.getContext('2d');
+        function resizeCanvas() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        }
+        window.addEventListener('resize', resizeCanvas);
+        resizeCanvas();
+
+        // Used characters for rain
+        const chars = '01ABCDEFGHIJKLMNOPQRSTUVWXYZ<>{}/\\!@#$%^&*()_+-=~`'.split('');
+        const fontSize = 16;
+        let columns = Math.floor(canvas.width / fontSize) + 1;
+        let drops = [];
+        for (let x = 0; x < columns; x++) drops[x] = Math.random() * 50;
+
+        function drawMatrix() {
+            // Fill with translucent light background color to create fading trails
+            ctx.fillStyle = 'rgba(238, 244, 238, 0.15)'; 
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            
+            // Faint dark green text
+            ctx.fillStyle = 'rgba(41, 143, 61, 0.25)'; 
+            ctx.font = fontSize + 'px "Fira Code", monospace';
+            
+            for (let i = 0; i < drops.length; i++) {
+                const text = chars[Math.floor(Math.random() * chars.length)];
+                ctx.fillText(text, i * fontSize, drops[i] * fontSize);
+                // Reset drop randomly to the top
+                if (drops[i] * fontSize > canvas.height && Math.random() > 0.95) drops[i] = 0;
+                drops[i]++;
+            }
+        }
+        setInterval(drawMatrix, 50);
+
+        // Scale Controller
+        class ScaleController {
+            constructor(refWidth = 1280, refHeight = 720) {
+                this.refW = refWidth;
+                this.refH = refHeight;
+                this.inners = document.querySelectorAll('.slide-inner');
+                this.resize();
+                window.addEventListener('resize', () => this.resize());
+            }
+            isMobile() { return window.innerWidth < 768; }
+            resize() {
+                if (this.isMobile()) {
+                    this.inners.forEach(inner => { inner.style.transform = ''; });
+                    return;
+                }
+                const s = Math.min((window.innerWidth - 40) / this.refW, (window.innerHeight - 40) / this.refH);
+                this.inners.forEach(inner => { inner.style.transform = `scale(${s})`; });
+            }
+        }
+
+        // Presentation Controller
+        class SlidePresentation {
+            constructor() {
+                this.slides = document.querySelectorAll('.slide');
+                this.dots = document.querySelector('.nav-dots');
+                this.current = 0;
+                this.setupObserver();
+                this.setupKeyboard();
+                this.setupDots();
+                this.hideHintOnScroll();
+            }
+            setupObserver() {
+                const obs = new IntersectionObserver(entries => {
+                    entries.forEach(e => {
+                        if (e.isIntersecting) {
+                            e.target.classList.add('visible');
+                            this.current = [...this.slides].indexOf(e.target);
+                            this.updateDots();
+                        }
+                    });
+                }, { threshold: 0.5 });
+                this.slides.forEach(s => obs.observe(s));
+            }
+            setupKeyboard() {
+                window.addEventListener('keydown', e => {
+                    if (e.target.tagName.toLowerCase() === 'textarea' || e.target.isContentEditable) return;
+                    if (e.key === 'ArrowDown' || e.key === 'ArrowRight' || e.key === ' ') {
+                        e.preventDefault(); this.go(this.current + 1);
+                    } else if (e.key === 'ArrowUp' || e.key === 'ArrowLeft') {
+                        e.preventDefault(); this.go(this.current - 1);
+                    }
+                });
+            }
+            setupDots() {
+                if(!this.dots) return;
+                this.slides.forEach((s, i) => {
+                    const dot = document.createElement('div');
+                    dot.className = 'dot';
+                    dot.onclick = () => this.go(i);
+                    this.dots.appendChild(dot);
+                });
+                this.updateDots();
+            }
+            updateDots() {
+                if(!this.dots) return;
+                this.dots.querySelectorAll('.dot').forEach((d, i) => {
+                    d.classList.toggle('active', i === this.current);
+                });
+            }
+            go(i) {
+                if (i >= 0 && i < this.slides.length) {
+                    this.slides[i].scrollIntoView({ behavior: 'smooth' });
+                }
+            }
+            hideHintOnScroll() {
+                const hint = document.querySelector('.keyboard-hint');
+                if (!hint) return;
+                let hidden = false;
+                window.addEventListener('scroll', () => {
+                    if (!hidden && window.scrollY > 50) {
+                        hint.style.opacity = '0';
+                        hidden = true;
+                    }
+                });
+            }
+        }
+        
+        new ScaleController();
+        new SlidePresentation();
+    </script>
+</body>
+</html>
